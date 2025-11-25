@@ -1,0 +1,66 @@
+<div class="cont">
+  <!-- ⭐ Contenedor principal del selector que debe ser la referencia de posición -->
+  <div class="selector-wrapper" (click)="toggle()">
+    <div class="selector-cont">
+      <div class="selector">
+        <span class="selector-content-display">
+          @if (!multiple) {
+            {{ selectedItem() ? selectedItem()![displayField] : 'Seleccione...' }}
+          } @else if (selectedItems().length === 0) {
+            <!-- Si es múltiple y no hay ítems seleccionados -->
+            Seleccione...
+          } @else {
+            <!-- ⭐ CAMBIO: Iteramos sobre los ítems para mostrar las "píldoras" -->
+            @for (item of selectedItems(); track item[idField]) {
+              <span class="selected-chip">
+                {{ item[displayField] }}
+              </span>
+            }
+          }
+        </span>
+      </div>
+
+      <span class="arrow">
+        <span [class.rotate]="isOpen()" class="fs-6">
+          <i-feather name="chevron-down"></i-feather>
+        </span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Contenido de la lista: POSICIONADO ABSOLUTAMENTE EN BASE AL WRAPPER -->
+  <div class="selector-content" [class.show]="isOpen()">
+    <div class="search-input-wrapper">
+      <input
+        type="text"
+        [(ngModel)]="filterTextInternal"
+        (ngModelChange)="onFilterInput($event)"
+        placeholder="Buscar..."
+        class="search-input"
+      />
+      <i-feather name="search" class="search-icon"></i-feather>
+    </div>
+
+    <!-- Fin Campo de búsqueda -->
+
+    <!-- Lista de elementos con scroll -->
+    <ul class="list-items" [class.no-search]="!searchable" (scroll)="onScroll($event)">
+      @for (item of items(); track $index) {
+        <li (click)="select(item)" [class.selected]="isSelected(item)">
+          @if (multiple) {
+            <span class="checkbox" [class.checked]="isSelected(item)"></span>
+          }
+          {{ item[displayField] }}
+        </li>
+      }
+
+      @if (loading()) {
+        <div class="loading">Cargando…</div>
+      }
+
+      @if (!hasMore() && items().length === 0 && !loading()) {
+        <div class="no-more">No hay resultados</div>
+      }
+    </ul>
+  </div>
+</div>
