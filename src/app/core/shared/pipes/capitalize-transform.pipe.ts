@@ -4,7 +4,7 @@ import { Pipe } from '@angular/core';
   name: 'capitalizeTransform',
 })
 export class CapitalizeTransformPipe {
-  transform(value: string): string {
+  transform(value: any): string {
     if (value == null) return '';
 
     if (Array.isArray(value)) {
