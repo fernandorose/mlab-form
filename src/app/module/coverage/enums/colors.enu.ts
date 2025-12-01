@@ -1,0 +1,26 @@
+export enum ColorEnum {
+  ACCENTLIGHT = `#00DB89`,
+  PRIMARYLIGHT = `#0013DB`,
+  PRIMARYDARK = `#0058DB`,
+  PRIMARY = `#009CDC`,
+  ACCENT = `#00DBD4`,
+  TITLE = `#161616`,
+  TEXT = `#6B6B6B`,
+  DIVIDER = `#9DAABD`,
+  CARD = `#EAEAEA`,
+  WHITE = `#FFFFFF`,
+  BASE = `#00ACC1`,
+  RESOLUTION = `#43A047`,
+  DENEGATE = `#FB8C00`,
+  CANCEL = `#E53935`,
+  ASIGNATION = `#009688`,
+  PROCESS = `#E91E63`,
+  COMPLETE = `#0A2342`,
+  CONSTRUCTION = `#1976D2`,
+  ANALYSIS = `#9C27B0`,
+  AUTHORIZATION = `#283593`,
+  PLANEATION = `#795548`,
+  SECURITY = `#4527A0`,
+}
+export const ColorList: string[] = Object.values(ColorEnum);
+export type ColorType = { [key in keyof typeof ColorEnum]: string };

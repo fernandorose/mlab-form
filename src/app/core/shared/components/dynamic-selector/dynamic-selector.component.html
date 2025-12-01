@@ -5,7 +5,11 @@
       <div class="selector">
         <span class="selector-content-display">
           @if (!multiple) {
-            {{ selectedItem() ? selectedItem()![displayField] : 'Seleccione...' }}
+            {{
+              selectedItem()
+                ? (selectedItem()![displayField] | capitalizeTransform)
+                : 'Seleccione...'
+            }}
           } @else if (selectedItems().length === 0) {
             <!-- Si es múltiple y no hay ítems seleccionados -->
             Seleccione...
@@ -13,7 +17,7 @@
             <!-- ⭐ CAMBIO: Iteramos sobre los ítems para mostrar las "píldoras" -->
             @for (item of selectedItems(); track item[idField]) {
               <span class="selected-chip">
-                {{ item[displayField] }}
+                {{ item[displayField] | capitalizeTransform }}
               </span>
             }
           }
@@ -27,7 +31,6 @@
       </span>
     </div>
   </div>
-
   <!-- Contenido de la lista: POSICIONADO ABSOLUTAMENTE EN BASE AL WRAPPER -->
   <div class="selector-content" [class.show]="isOpen()">
     <div class="search-input-wrapper">
@@ -50,7 +53,7 @@
           @if (multiple) {
             <span class="checkbox" [class.checked]="isSelected(item)"></span>
           }
-          {{ item[displayField] }}
+          {{ item[displayField] | capitalizeTransform }}
         </li>
       }
 

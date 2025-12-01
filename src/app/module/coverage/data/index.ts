@@ -1,6 +1,16 @@
+import { globalMlabItf } from '../../service/mlab.service';
+import { FieldNames, FieldTypes } from '../enums/fields.enu';
+
 export const linea = ['LINEA 1', 'LINEA 2'];
 
 export const muestra = ['RUTINARIAS', 'ESPECIALES'];
+
+export const transportista = [
+  'TRANSPORTES ESPECIALIZADOS CARMEX',
+  'TRANSGRANEL',
+  'FERROTOLVAS/TRANSTOVLAS',
+  'LOGISTICA DEL MAYAB',
+];
 
 export const compartimientoTolva = [
   '1 INFERIOR',
@@ -26,140 +36,404 @@ export const compartimientoFurgon = [
   'BC SUPERIOR',
 ];
 
+type DisplayMode =
+  | { type: 'FIELD'; prop: keyof globalMlabItf }
+  | { type: 'INPUT' }
+  | { type: 'NONE' };
+
+export const USE_NAME_INSTEAD_OF_ID: FieldNames[] = [
+  FieldNames.HOPPER_COMPARTMENT,
+  FieldNames.FREIGHT_CAR_COMPARTMENT,
+];
+
+export const VALIDATOR_MAX_LENGTH_MAP: Record<string, number> = {
+  [FieldNames.FOLIO_NUMBER]: 10,
+};
+
+export const VALIDATOR_COMPARE_MAP: Record<string, 'NOMBRE' | 'ID' | 'NONE'> = {
+  [FieldNames.INSPECTION_LOT]: 'NOMBRE',
+  [FieldNames.FOLIO_NUMBER]: 'NONE',
+  [FieldNames.OPERATOR]: 'ID',
+};
+
+export const VALIDATOR_EXACT_MATCH_MAP: Record<string, boolean> = {
+  [FieldNames.INSPECTION_LOT]: true,
+  [FieldNames.FOLIO_NUMBER]: false,
+  [FieldNames.OPERATOR]: false,
+};
+
+export const VALIDATOR_DISPLAY_MAP: Record<string, DisplayMode> = {
+  [FieldNames.INSPECTION_LOT]: { type: 'FIELD', prop: 'NOMBRE' },
+  [FieldNames.FOLIO_NUMBER]: { type: 'INPUT' },
+  [FieldNames.OPERATOR]: { type: 'FIELD', prop: 'NOMBRE' },
+};
+
+export const sendNameInsteadOfId: FieldNames[] = [FieldNames.OPERATOR];
+
 export const fields = [
   {
-    name: 'procedencia',
-    type: 'selector',
+    name: FieldNames.ORIGIN,
+    type: FieldTypes.SELECTOR,
     label: 'procedencia',
     options: [],
   },
   {
-    name: 'producto',
-    type: 'selector',
+    name: FieldNames.PRODUCT,
+    type: FieldTypes.SELECTOR,
     label: 'producto',
     options: [],
   },
   {
-    name: 'nlote',
-    type: 'text',
+    name: FieldNames.FOLIO_NUMBER,
+    type: FieldTypes.VALIDATOR,
     label: 'numero de lote',
   },
   {
-    name: 'ntrabajador',
-    type: 'text',
+    name: FieldNames.OPERATOR,
+    type: FieldTypes.VALIDATOR,
     label: 'numero de trabajador',
   },
   {
-    name: 'loteinspeccion',
-    type: 'text',
+    name: FieldNames.INSPECTION_LOT,
+    type: FieldTypes.VALIDATOR,
     label: 'lote de inspeccion',
   },
   {
-    name: 'compartimientotolva',
-    type: 'selector',
+    name: FieldNames.HOPPER_COMPARTMENT,
+    type: FieldTypes.SELECTOR,
     label: 'compartimiento tolva',
     options: [],
   },
   {
-    name: 'compartimientofurgon',
-    type: 'selector',
+    name: FieldNames.FREIGHT_CAR_COMPARTMENT,
+    type: FieldTypes.SELECTOR,
     label: 'compartimiento furgon',
     options: [],
   },
   {
-    name: 'transportista',
-    type: 'text',
+    name: FieldNames.CARRIER,
+    type: FieldTypes.SELECTOR,
     label: 'transportista',
   },
   {
-    name: 'codigoempaque',
-    type: 'text',
+    name: FieldNames.PACKAGE_CODE,
+    type: FieldTypes.TEXT,
     label: 'codigo de empaque',
   },
   {
-    name: 'codigovehiculo',
-    type: 'text',
+    name: FieldNames.VEHICLE_CODE,
+    type: FieldTypes.TEXT,
     label: 'codigo de vehiculo',
   },
   {
-    name: 'tmuestra',
-    type: 'selector',
+    name: FieldNames.SAMPLE_TYPE,
+    type: FieldTypes.SELECTOR,
     label: 'tipo de muestra',
     options: [],
   },
   {
-    name: 'linea',
-    type: 'selector',
+    name: FieldNames.LINE,
+    type: FieldTypes.SELECTOR,
     label: 'linea',
     options: [],
   },
 ];
 
-export const areaConfig = {
+export type Areas =
+  | 'ADITIVACION'
+  | 'BULK'
+  | 'DESCARGADERAS'
+  | 'EMBARQUE'
+  | 'EMPAQUE'
+  | 'ESPECIALES'
+  | 'ESPECIALES ALMACEN'
+  | 'EXPLANADA 1'
+  | 'EXPLANADA 2'
+  | 'EXTRUSION 1'
+  | 'EXTRUSION 2'
+  | 'F.G.R.U.'
+  | 'LABORATORIO'
+  | 'MATERIAS PRIMAS'
+  | 'MERICHEM'
+  | 'OTRA'
+  | 'POLIMERIZACION 1'
+  | 'POLIMERIZACION 2'
+  | 'SILOS DE HOMOGENIZADO'
+  | 'SILOS DE PRODUCTO TERMINADO'
+  | 'SILOS INTERMEDIOS'
+  | 'SPLITTER'
+  | 'TEPEAL';
+
+export type AreaConfigMap = {
+  [A in Areas]: AreaDefinition;
+};
+
+export interface AreaDefinition {
+  BASE_FIELDS: FieldNames[];
+  CONDITIONAL_FIELDS?: {
+    [key: string]: FieldNames[];
+  };
+}
+
+export const areaConfig: AreaConfigMap = {
   ADITIVACION: {
     BASE_FIELDS: [
-      'procedencia',
-      'producto',
-      'nlote',
-      'ntrabajador',
-      'tmuestra',
-      'loteinspeccion',
-      'linea',
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
     ],
   },
 
   BULK: {
-    BASE_FIELDS: ['procedencia', 'producto', 'ntrabajador', 'linea'],
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
   },
 
   DESCARGADERAS: {
-    BASE_FIELDS: ['procedencia', 'producto', 'ntrabajador', 'codigovehiculo', 'linea'],
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.VEHICLE_CODE,
+      FieldNames.LINE,
+    ],
     CONDITIONAL_FIELDS: {
-      'DUCTO PEMEX': ['procedencia', 'producto', 'ntrabajador', 'linea'],
-      'DUCTO TEPEAL': ['procedencia', 'producto', 'ntrabajador', 'linea'],
+      'DUCTO PEMEX': [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
+      'DUCTO TEPEAL': [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
     },
   },
 
   EMBARQUE: {
-    BASE_FIELDS: ['procedencia', 'producto', 'nlote', 'ntrabajador', 'linea', 'codigoempaque'],
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.LINE,
+      FieldNames.PACKAGE_CODE,
+    ],
 
     CONDITIONAL_FIELDS: {
       TOLVA: [
-        'procedencia',
-        'nlote',
-        'ntrabajador',
-        'compartimientotolva',
-        'linea',
-        'codigovehiculo',
+        FieldNames.ORIGIN,
+        FieldNames.FOLIO_NUMBER,
+        FieldNames.OPERATOR,
+        FieldNames.HOPPER_COMPARTMENT,
+        FieldNames.LINE,
+        FieldNames.VEHICLE_CODE,
       ],
 
       FURGON: [
-        'procedencia',
-        'nlote',
-        'ntrabajador',
-        'compartimientofurgon',
-        'linea',
-        'codigovehiculo',
+        FieldNames.ORIGIN,
+        FieldNames.FOLIO_NUMBER,
+        FieldNames.OPERATOR,
+        FieldNames.FREIGHT_CAR_COMPARTMENT,
+        FieldNames.LINE,
+        FieldNames.VEHICLE_CODE,
       ],
     },
   },
 
   EMPAQUE: {
-    BASE_FIELDS: ['procedencia', 'producto', 'nlote', 'ntrabajador', 'linea', 'codigoempaque'],
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.LINE,
+      FieldNames.PACKAGE_CODE,
+    ],
 
     CONDITIONAL_FIELDS: {
       FURGON: [
-        'procedencia',
-        'nlote',
-        'ntrabajador',
-        'compartimientofurgon',
-        'linea',
-        'codigovehiculo',
+        FieldNames.ORIGIN,
+        FieldNames.FOLIO_NUMBER,
+        FieldNames.OPERATOR,
+        FieldNames.FREIGHT_CAR_COMPARTMENT,
+        FieldNames.LINE,
+        FieldNames.VEHICLE_CODE,
       ],
     },
   },
 
   ESPECIALES: {
-    BASE_FIELDS: ['procedencia', 'producto', 'ntrabajador', 'linea'],
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
+  },
+
+  'ESPECIALES ALMACEN': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PACKAGE_CODE,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.LINE,
+    ],
+    CONDITIONAL_FIELDS: {
+      TOLVA: [
+        FieldNames.ORIGIN,
+        FieldNames.CARRIER,
+        FieldNames.FOLIO_NUMBER,
+        FieldNames.OPERATOR,
+        FieldNames.HOPPER_COMPARTMENT,
+        FieldNames.LINE,
+      ],
+      FURGON: [
+        FieldNames.ORIGIN,
+        FieldNames.CARRIER,
+        FieldNames.FOLIO_NUMBER,
+        FieldNames.OPERATOR,
+        FieldNames.FREIGHT_CAR_COMPARTMENT,
+        FieldNames.VEHICLE_CODE,
+        FieldNames.LINE,
+      ],
+    },
+  },
+
+  'EXPLANADA 1': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PACKAGE_CODE,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.LINE,
+    ],
+  },
+
+  'EXPLANADA 2': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PACKAGE_CODE,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.LINE,
+    ],
+  },
+
+  'EXTRUSION 1': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  'EXTRUSION 2': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  'F.G.R.U.': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  LABORATORIO: {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  'MATERIAS PRIMAS': {
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
+  },
+
+  MERICHEM: {
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
+  },
+
+  OTRA: {
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR, FieldNames.LINE],
+  },
+
+  'POLIMERIZACION 1': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  'POLIMERIZACION 2': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  'SILOS DE HOMOGENIZADO': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.LINE,
+    ],
+  },
+
+  'SILOS DE PRODUCTO TERMINADO': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.FOLIO_NUMBER,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.LINE,
+    ],
+  },
+
+  'SILOS INTERMEDIOS': {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.INSPECTION_LOT,
+      FieldNames.LINE,
+    ],
+  },
+
+  SPLITTER: {
+    BASE_FIELDS: [
+      FieldNames.ORIGIN,
+      FieldNames.PRODUCT,
+      FieldNames.OPERATOR,
+      FieldNames.SAMPLE_TYPE,
+      FieldNames.LINE,
+    ],
+  },
+
+  TEPEAL: {
+    BASE_FIELDS: [FieldNames.ORIGIN, FieldNames.PRODUCT, FieldNames.OPERATOR],
   },
 };

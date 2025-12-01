@@ -1,0 +1,64 @@
+<main>
+  <div class="modal-header d-flex flex-column align-items-start">
+    <h2 class="modal-title fw-semibold" [ngStyle]="{ color: colors.RESOLUTION }">
+      Detalles de la Solicitud
+    </h2>
+    <p>Por favor confirme que los datos ingresados sean correctos</p>
+  </div>
+  <div class="modal-body">
+    <table class="table table-borderless">
+      <tbody>
+        @for (key of dataKeys(); track key) {
+          @if (shouldDisplay(key, data[key])) {
+            <tr>
+              <td class="text-capitalize fw-semibold" style="width: 35%">{{ formatKey(key) }}</td>
+
+              <td>
+                @if (isArray(data[key])) {
+                  <ul class="mb-0">
+                    @for (item of data[key]; track item) {
+                      <li class="text-capitalize">
+                        {{ item | capitalizeTransform }}
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <span class="text-capitalize">
+                    {{ data[key] | capitalizeTransform }}
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr>
+            <td colspan="2" class="text-center text-warning py-3">
+              ⚠️ No hay datos para mostrar en la solicitud.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn text-white"
+      (click)="cancel()"
+      [ngStyle]="{ background: colors.CANCEL }"
+    >
+      <i-feather name="x"></i-feather>
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="btn text-white"
+      (click)="confirm()"
+      [ngStyle]="{ background: colors.PRIMARYDARK }"
+    >
+      <i-feather name="save"></i-feather>
+      Confirmar y Enviar
+    </button>
+  </div>
+</main>

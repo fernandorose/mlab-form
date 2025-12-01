@@ -1,5 +1,14 @@
+@use 'fonts' as *;
+
 * {
-  font-family: "lato", sans-serif;
+  font-family: $poppins;
 }
+
+:root {
+  overscroll-behavior: none;
+}
+
+/* Importing Bootstrap SCSS file. */
+@import 'bootstrap/scss/bootstrap';
 /* Importing Bootstrap SCSS file. */
 @import 'bootstrap/scss/bootstrap';

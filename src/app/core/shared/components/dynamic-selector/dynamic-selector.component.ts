@@ -8,15 +8,17 @@ import {
   OnInit,
   Output,
   signal,
+  SimpleChanges,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { debounceTime, distinctUntilChanged, Observable, Subject, takeUntil } from 'rxjs';
+import { CapitalizeTransformPipe } from '../../pipes/capitalize-transform.pipe';
 
 @Component({
   selector: 'app-dynamic-selector',
   standalone: true,
-  imports: [FeatherModule, FormsModule, ReactiveFormsModule],
+  imports: [FeatherModule, FormsModule, ReactiveFormsModule, CapitalizeTransformPipe],
   templateUrl: './dynamic-selector.component.html',
   styleUrl: './dynamic-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +29,9 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
   @Input() multiple = false;
   @Input() idField!: keyof T;
   @Input() searchable = false;
+  @Input() resetTrigger: any;
 
+  @Output() emptyChange = new EventEmitter<boolean>();
   @Output() selected = new EventEmitter<T>();
   @Output() selectedMultiple = new EventEmitter<T[]>();
 
@@ -49,12 +53,10 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       const open = this.isOpen();
-
       if (open && !this.lastOpen) {
         this.reset(this.filterText());
         this.loadMore();
       }
-
       this.lastOpen = open;
     });
   }
@@ -74,6 +76,29 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['resetTrigger'] && !changes['resetTrigger'].firstChange) {
+      this.fullReset();
+    }
+  }
+
+  clearSelection() {
+    this.selectedItem.set(null);
+    this.selectedItems.set([]);
+    this.items.set([]);
+    this.page.set(1);
+    this.hasMore.set(true);
+    this.filterText.set('');
+    this.filterTextInternal = '';
+    this.emptyChange.emit(true);
+  }
+
+  fullReset() {
+    this.reset('');
+    this.selectedItem.set(null);
+    this.selectedItems.set([]);
+  }
+
   onFilterInput(filter: string) {
     this.filterSubject.next(filter);
   }
@@ -83,7 +108,7 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
     this.page.set(1);
     this.hasMore.set(true);
     this.loading.set(false);
-    if (this.filterText() !== currentFilter) this.filterText.set(currentFilter);
+    this.filterText.set(currentFilter);
   }
 
   loadMore() {
@@ -102,7 +127,6 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.error('Error loading data:', err);
         this.hasMore.set(false);
         this.loading.set(false);
       },
@@ -115,15 +139,13 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
   onScroll(event: Event) {
     const el = event.target as HTMLElement;
     const listItemsElement = el.closest('.list-items');
-
     if (
       listItemsElement === el &&
       !this.loading() &&
       this.hasMore() &&
       el.scrollTop + el.clientHeight >= el.scrollHeight - 20
-    ) {
+    )
       this.loadMore();
-    }
   }
 
   toggle() {
@@ -150,9 +172,9 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
       this.toggleItem(item);
       return;
     }
-
     this.selectedItem.set(item);
     this.selected.emit(item);
+    this.emptyChange.emit(false);
     this.isOpen.set(false);
   }
 
@@ -160,10 +182,9 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
     const arr = this.selectedItems();
     const exists = this.isSelected(item);
     const currentId = item[this.idField];
-
     const updated = exists ? arr.filter((x) => x[this.idField] !== currentId) : [...arr, item];
-
     this.selectedItems.set(updated);
     this.selectedMultiple.emit(updated);
+    this.emptyChange.emit(updated.length === 0);
   }
 }

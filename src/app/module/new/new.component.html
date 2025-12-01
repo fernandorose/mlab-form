@@ -1,47 +1,62 @@
-<main class="container py-4 d-flex justify-content-center">
+<main class="container py-4 d-flex flex-column justify-content-center align-items-center">
   <div class="col-lg-5 col-md-8">
-    <form class="border-0 rounded-4 p-4" [formGroup]="frmData">
+    <form class="border shadow rounded-3 p-4 bg-white" [formGroup]="frmData">
       <div class="pb-3 d-flex flex-column align-items-center">
         <small class="d-block text-muted">Registro de muestras para laboratorio</small>
-        <h1 class="fw-bold text-primary">Alta de muestras</h1>
+        <h1 class="fw-bold" [ngStyle]="{ color: colors.PRIMARYDARK }">Alta de muestras</h1>
       </div>
       <div>
         <div class="d-flex justify-content-between pb-3">
           <div>
             <small class="text-muted">Hora de muestreo</small>
-            <h4 class="fw-bold text-primary">{{ currentTime() | roundTime }}</h4>
+            <h5 class="" [ngStyle]="{ color: colors.PRIMARYDARK }">{{ time.roundedTime() }}</h5>
           </div>
           <div>
             <small class="text-muted">Fecha de muestreo</small>
-            <h4 class="fw-bold text-primary">{{ todayDate() | date: 'dd MMM yyyy' }}</h4>
+            <h5 class="" [ngStyle]="{ color: colors.PRIMARYDARK }">
+              {{ todayDate() | date: 'dd MMM yyyy' }}
+            </h5>
           </div>
         </div>
         <div class="mb-4">
-          <label class="form-label">Lista de analisis</label>
+          <label class="form-label fw-semibold">Lista de analisis</label>
           <app-dynamic-selector
-            [loadData]="loadAnalisis"
+            [loadData]="getSelectorLoader(fieldNames.ANALYSIS)"
             displayField="NOMBRE"
             [idField]="'ID'"
             [multiple]="true"
-            (selected)="onAreaSelected($event)"
+            (selectedMultiple)="onAnalisisSelected($event)"
           />
+          @if (shouldShowRequiredError(fieldNames.ANALYSIS)) {
+            <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+              El campo es <strong>obligatorio</strong>.
+            </div>
+          }
         </div>
         <div class="mb-4">
-          <label class="form-label">Área</label>
+          <label class="form-label fw-semibold">Área</label>
           <app-dynamic-selector
-            [loadData]="loadAreas"
+            [loadData]="getSelectorLoader(fieldNames.AREA)"
             displayField="NOMBRE"
             (selected)="onAreaSelected($event)"
           />
+          @if (shouldShowRequiredError(fieldNames.AREA)) {
+            <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+              El campo es <strong>obligatorio</strong>.
+            </div>
+          }
         </div>
       </div>
 
       <section class="mt-3">
         <hr />
         @if (frmData.get('area')?.value === '') {
-          <div class="alert alert-info text-center py-3 rounded-3 shadow-sm border-0">
+          <div
+            class="text-center py-3 rounded-3 shadow-sm border-0 text-white"
+            [ngStyle]="{ background: colors.DIVIDER }"
+          >
             <i-feather name="alert-circle"></i-feather> Por favor,
-            <strong>seleccione un área</strong>
+            <span class="fw-semibold">seleccione un área</span>
             para cargar los campos.
           </div>
         } @else {
@@ -53,7 +68,7 @@
               @if (visibleFields().includes(f.name)) {
                 @if (dynForm.get(f.name)) {
                   <div class="d-flex flex-column">
-                    <label class="form-label text-capitalize mb-2 fw-bold">
+                    <label class="form-label text-capitalize mb-2 fw-semibold">
                       {{ f.label }}
                     </label>
 
@@ -63,28 +78,69 @@
                         class="form-control p-2 rounded-3"
                         placeholder="Ingrese valor"
                       />
-                    }
-
-                    @if (f.type === 'select') {
-                      <select [formControlName]="f.name" class="form-select p-2 rounded-3">
-                        <option value="" disabled selected [defaultSelected]="true">
-                          Seleccione una opción
-                        </option>
-                        @for (op of f.options; track op) {
-                          <option [value]="op">{{ op }}</option>
-                        }
-                      </select>
+                      @if (shouldShowRequiredError(f.name)) {
+                        <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+                          El campo es <strong>obligatorio</strong>.
+                        </div>
+                      }
                     }
 
                     @if (f.type === 'selector') {
                       <div class="rounded-3">
                         <app-dynamic-selector
                           [loadData]="getSelectorLoader(f.name)"
+                          (emptyChange)="onSelectorEmpty(f.name, $event)"
                           [idField]="'ID'"
                           displayField="NOMBRE"
                           [multiple]="isFieldMultiple(f.name)"
                           (selected)="onSelectorSelected(f.name, $event)"
+                          (selectedMultiple)="onSelectorSelected(f.name, $event)"
+                          [resetTrigger]="resetSelectors()"
                         />
+                        @if (shouldShowRequiredError(f.name)) {
+                          <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+                            El campo es <strong>obligatorio</strong>.
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    @if (f.type === 'validator') {
+                      <input
+                        [formControlName]="f.name"
+                        class="form-control p-2 rounded-3"
+                        placeholder="Ingrese {{ f.label }}"
+                        (input)="onValidatorInput(f.name, $event.target.value)"
+                        [attr.maxlength]="VALIDATOR_MAX_LENGTH_MAP[f.name]"
+                      />
+                      @if (shouldShowRequiredError(f.name)) {
+                        <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+                          El campo es <strong>obligatorio</strong>.
+                        </div>
+                      }
+
+                      <div class="d-flex flex-column">
+                        @if (validatorSrv.status()[f.name] === true) {
+                          <div class="mt-1 small" [ngStyle]="{ color: colors.RESOLUTION }">
+                            <i-feather name="check"></i-feather>
+                            {{ f.label }} válido
+                          </div>
+                        }
+                        @if (validatorSrv.status()[f.name] === false) {
+                          <div class="mt-1 small" [ngStyle]="{ color: colors.CANCEL }">
+                            <i-feather name="x"></i-feather>
+                            {{ f.label }} no existe
+                          </div>
+                        }
+                        @if (validatorSrv.status()[f.name] === true) {
+                          @if (validatorDisplay(f.name).visible) {
+                            <div class="fw-bold">
+                              <small [ngStyle]="{ color: colors.RESOLUTION }">{{
+                                validatorDisplay(f.name).text
+                              }}</small>
+                            </div>
+                          }
+                        }
                       </div>
                     }
                   </div>
@@ -97,7 +153,7 @@
         <hr />
 
         <div class="mb-4">
-          <label class="form-label fw-bold">Notas u observaciones adicionales</label>
+          <label class="form-label fw-semibold">Notas u observaciones adicionales</label>
           <textarea
             class="form-control rounded-3 shadow-sm p-3"
             rows="3"
@@ -109,8 +165,9 @@
         <div class="w-100 mt-4">
           <button
             type="submit"
-            [disabled]="frmData.invalid"
-            class="btn btn-primary btn-lg w-100 py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-bold"
+            (click)="onSave()"
+            [ngStyle]="{ background: colors.PRIMARYDARK }"
+            class="btn btn-lg w-100 py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
           >
             <span class="fs-6"> <i-feather name="save"></i-feather></span> Guardar
           </button>
@@ -120,19 +177,19 @@
         </div>
       </section>
     </form>
-    <div class="d-flex justify-content-between mt-4 text-muted">
+    <div class="d-flex justify-content-between mt-4 text-muted fw-bold">
       <small>RLC-005</small>
       <small>Rev. 1</small>
       <small>Tiempo de resguardo: Indefinido</small>
     </div>
-    <div class="d-flex flex-column justify-content-center align-items-center text-muted mt-2">
-      <small
-        >Registro de Muestras para Laboratorio Copyright ©
-        {{ todayDate() | date: 'yyyy' }} Industrias Indelpro S.A. de C.V.</small
-      >
-      <small
-        >Soporte técnico: <strong>intranetsupvsr&#64;indelpro.com</strong> o la ext. 1679</small
-      >
-    </div>
+  </div>
+  <div
+    class="d-flex flex-column justify-content-center align-items-center text-muted mt-2 text-center"
+  >
+    <small
+      >Registro de Muestras para Laboratorio Copyright ©
+      {{ todayDate() | date: 'yyyy' }} Industrias Indelpro S.A. de C.V.</small
+    >
+    <small>Soporte técnico: <strong>intranetsupvsr&#64;indelpro.com</strong> o la ext. 1679</small>
   </div>
 </main>
