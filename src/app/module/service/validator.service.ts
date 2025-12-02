@@ -110,9 +110,9 @@ export class ValidatorHandlerService {
     switch (field) {
       case FieldNames.FOLIO_NUMBER:
         return (val: string) => this.mlab.validateFolioNum(this.currentArea, val);
-      case 'inspection_lot':
+      case FieldNames.INSPECTION_LOT:
         return (val: string) => this.mlab.validateInspectionLot(val);
-      case 'operator':
+      case FieldNames.OPERATOR:
         return (val: string) => this.mlab.validateOperator(val);
       default:
         return null;

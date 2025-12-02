@@ -17,13 +17,13 @@
                 @if (isArray(data[key])) {
                   <ul class="mb-0">
                     @for (item of data[key]; track item) {
-                      <li class="text-capitalize">
+                      <li>
                         {{ item | capitalizeTransform }}
                       </li>
                     }
                   </ul>
                 } @else {
-                  <span class="text-capitalize">
+                  <span>
                     {{ data[key] | capitalizeTransform }}
                   </span>
                 }

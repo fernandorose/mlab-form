@@ -86,17 +86,17 @@ export const fields = [
   {
     name: FieldNames.FOLIO_NUMBER,
     type: FieldTypes.VALIDATOR,
-    label: 'numero de lote',
+    label: 'número de lote',
   },
   {
     name: FieldNames.OPERATOR,
     type: FieldTypes.VALIDATOR,
-    label: 'numero de trabajador',
+    label: 'número de trabajador',
   },
   {
     name: FieldNames.INSPECTION_LOT,
     type: FieldTypes.VALIDATOR,
-    label: 'lote de inspeccion',
+    label: 'lote de inspección',
   },
   {
     name: FieldNames.HOPPER_COMPARTMENT,
@@ -118,12 +118,12 @@ export const fields = [
   {
     name: FieldNames.PACKAGE_CODE,
     type: FieldTypes.TEXT,
-    label: 'codigo de empaque',
+    label: 'código de empaque',
   },
   {
     name: FieldNames.VEHICLE_CODE,
     type: FieldTypes.TEXT,
-    label: 'codigo de vehiculo',
+    label: 'código de vehiculo',
   },
   {
     name: FieldNames.SAMPLE_TYPE,
@@ -134,7 +134,7 @@ export const fields = [
   {
     name: FieldNames.LINE,
     type: FieldTypes.SELECTOR,
-    label: 'linea',
+    label: 'línea',
     options: [],
   },
 ];

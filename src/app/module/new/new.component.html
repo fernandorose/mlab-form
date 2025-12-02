@@ -1,5 +1,15 @@
-<main class="container py-4 d-flex flex-column justify-content-center align-items-center">
-  <div class="col-lg-5 col-md-8">
+<div class="background"></div>
+<main class="container py-3 d-flex flex-column gap-2 justify-content-center align-items-center">
+  <div class="col-lg-5 col-md-8 d-flex flex-column gap-2">
+    <div class="w-100">
+      <button
+        [ngStyle]="{ background: colors.RESOLUTION }"
+        class="btn btn py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
+      >
+        <i-feather name="clock"></i-feather>
+        Ultimos registros
+      </button>
+    </div>
     <form class="border shadow rounded-3 p-4 bg-white" [formGroup]="frmData">
       <div class="pb-3 d-flex flex-column align-items-center">
         <small class="d-block text-muted">Registro de muestras para laboratorio</small>
@@ -19,7 +29,7 @@
           </div>
         </div>
         <div class="mb-4">
-          <label class="form-label fw-semibold">Lista de analisis</label>
+          <label class="form-label fw-semibold">Lista de análisis</label>
           <app-dynamic-selector
             [loadData]="getSelectorLoader(fieldNames.ANALYSIS)"
             displayField="NOMBRE"
@@ -68,8 +78,8 @@
               @if (visibleFields().includes(f.name)) {
                 @if (dynForm.get(f.name)) {
                   <div class="d-flex flex-column">
-                    <label class="form-label text-capitalize mb-2 fw-semibold">
-                      {{ f.label }}
+                    <label class="form-label mb-2 fw-semibold">
+                      {{ f.label | capitalizeTransform }}
                     </label>
 
                     @if (f.type === 'text') {
@@ -163,21 +173,20 @@
         </div>
 
         <div class="w-100 mt-4">
-          <button
-            type="submit"
-            (click)="onSave()"
-            [ngStyle]="{ background: colors.PRIMARYDARK }"
-            class="btn btn-lg w-100 py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
-          >
-            <span class="fs-6"> <i-feather name="save"></i-feather></span> Guardar
-          </button>
-          <small class="d-block text-center text-muted mt-2"
-            >Asegúrese de que todos los campos requeridos estén llenos.</small
-          >
+          <div class="w-100 d-flex gap-1">
+            <button
+              type="submit"
+              (click)="onSave()"
+              [ngStyle]="{ background: colors.PRIMARYDARK }"
+              class="btn btn-lg w-100 py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
+            >
+              <span class="fs-6"> <i-feather name="save"></i-feather></span> Guardar
+            </button>
+          </div>
         </div>
       </section>
     </form>
-    <div class="d-flex justify-content-between mt-4 text-muted fw-bold">
+    <div class="d-flex justify-content-between mt-4 text-muted fw-bold" style="font-size: 0.9rem">
       <small>RLC-005</small>
       <small>Rev. 1</small>
       <small>Tiempo de resguardo: Indefinido</small>
@@ -185,6 +194,7 @@
   </div>
   <div
     class="d-flex flex-column justify-content-center align-items-center text-muted mt-2 text-center"
+    style="font-size: 0.9rem"
   >
     <small
       >Registro de Muestras para Laboratorio Copyright ©

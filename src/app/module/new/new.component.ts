@@ -1,4 +1,4 @@
-import { DatePipe, JsonPipe, NgStyle } from '@angular/common';
+import { DatePipe, NgStyle } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,7 @@ import { ConfirmationModal } from '../../core/shared/components/confirmation-mod
 import { DynamicSelector } from '../../core/shared/components/dynamic-selector/dynamic-selector.component';
 import { syncFormControlsHelper } from '../../core/shared/helper/dyn-form.hlp';
 import { transformDate, transformTime } from '../../core/shared/helper/time-date.hlp';
+import { CapitalizeTransformPipe } from '../../core/shared/pipes/capitalize-transform.pipe';
 import { areaConfig, fields, VALIDATOR_MAX_LENGTH_MAP } from '../coverage/data';
 import { ColorEnum } from '../coverage/enums/colors.enu';
 import { FieldNames } from '../coverage/enums/fields.enu';
@@ -32,11 +33,29 @@ interface AreaState {
     DynamicSelector,
     FeatherModule,
     DatePipe,
-    JsonPipe,
     NgStyle,
-    ConfirmationModal,
+    CapitalizeTransformPipe,
   ],
   templateUrl: './new.component.html',
+  styles: [
+    `
+      .background {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-color: #eeeeee;
+        opacity: 0.8;
+        background-image:
+          linear-gradient(#ffffff 1px, transparent 1px),
+          linear-gradient(to right, #ffffff 1px, #eeeeee 1px);
+        background-size: 20px 20px;
+        /* background: radial-gradient(147.1% 100% at 50% 0%, #ffffff 0%, #c4c4c4 100%); */
+        /* background-repeat: no-repeat;
+    background-size: cover;
+    pointer-events: none; */
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class New {
@@ -123,8 +142,12 @@ export class New {
     const formBaseValues = this.frmData.value;
     const formDynamicValues = { ...this.dynForm.value };
     for (const field of Object.keys(formDynamicValues)) {
-      const validatedObj = this.validatorSrv.result()[field];
-      if (validatedObj) formDynamicValues[field] = validatedObj.NOMBRE ?? validatedObj.ID;
+      if (field === FieldNames.FOLIO_NUMBER) {
+        formDynamicValues[field] = this.validatorSrv.inputValue()[field];
+      } else {
+        const validatedObj = this.validatorSrv.result()[field];
+        if (validatedObj) formDynamicValues[field] = validatedObj.NOMBRE ?? validatedObj.ID;
+      }
     }
     const { compartimientotolva, compartimientofurgon, ...otherDynamicValues } = formDynamicValues;
     const compartmentsValue = compartimientotolva || compartimientofurgon;
@@ -153,7 +176,7 @@ export class New {
     const HIDDEN_FIELDS = ['delivery_date', 'sampling_date', 'sampling_time', 'delivery_time'];
     const displayData: Record<string, any> = {};
     for (const key of Object.keys(requestBody)) {
-      if (HIDDEN_FIELDS.includes(key)) continue; // ❌ no mostrar en el modal
+      if (HIDDEN_FIELDS.includes(key)) continue;
       const label = this.fieldLabelMap[key] ?? key;
       displayData[label] = requestBody[key];
     }
@@ -197,21 +220,21 @@ export class New {
     return conditional ?? config.BASE_FIELDS;
   });
 
-  getSelectorLoader = (field: string) => {
+  public getSelectorLoader = (field: string) => {
     return this.selectorService.getLoader(field, this.selectedArea);
   };
 
-  extractSelectorValue(field: string, item: globalMlabItf) {
+  public extractSelectorValue(field: string, item: globalMlabItf) {
     if (this.isFieldMultiple(field)) return item.ID;
     return this.useNameInsteadOfId.includes(field as FieldNames) ? item.NOMBRE : item.ID;
   }
 
-  handleSelectorSpecialCases(field: string, item: globalMlabItf) {
+  public handleSelectorSpecialCases(field: string, item: globalMlabItf) {
     if (field === FieldNames.PRODUCT) this.onProductoSelected(item);
     if (field === FieldNames.ORIGIN) this.onProcedenciaSelected(item);
   }
 
-  onSelectorSelected(field: string, event: globalMlabItf | globalMlabItf[]) {
+  public onSelectorSelected(field: string, event: globalMlabItf | globalMlabItf[]) {
     const items = Array.isArray(event) ? event : [event];
 
     if (this.isFieldMultiple(field)) {
@@ -226,7 +249,7 @@ export class New {
     this.handleSelectorSpecialCases(field, item);
   }
 
-  onAreaSelected(area: globalMlabItf) {
+  public onAreaSelected(area: globalMlabItf) {
     Object.keys(this.dynForm.controls).forEach((key) => {
       this.dynForm.removeControl(key);
     });
@@ -240,22 +263,22 @@ export class New {
     this.syncFormControls(this.visibleFields());
   }
 
-  onAnalisisSelected(items: globalMlabItf[]) {
+  public onAnalisisSelected(items: globalMlabItf[]) {
     const ids = items.map((i) => i.NOMBRE);
     this.frmData.get(FieldNames.ANALYSIS)?.setValue(ids);
   }
 
-  onProductoSelected(item: globalMlabItf) {
+  public onProductoSelected(item: globalMlabItf) {
     this.dynForm.get(FieldNames.PRODUCT)?.setValue(item.NOMBRE);
   }
 
-  onProcedenciaSelected(item: globalMlabItf) {
+  public onProcedenciaSelected(item: globalMlabItf) {
     this.dynForm.get(FieldNames.ORIGIN)?.setValue(item.NOMBRE);
     this.selectedProcedenciaValue.set(item.NOMBRE?.toUpperCase() ?? null);
     this.syncFormControls(this.visibleFields());
   }
 
-  syncFormControls(visibles: string[]) {
+  public syncFormControls(visibles: string[]) {
     syncFormControlsHelper(this.dynForm, visibles, this.allFields, this._fb);
   }
 
@@ -263,7 +286,7 @@ export class New {
     return this.useNameInsteadOfId.includes(fieldName as FieldNames);
   }
 
-  shouldShowRequiredError(fieldName: string): boolean {
+  public shouldShowRequiredError(fieldName: string): boolean {
     let control = this.dynForm.get(fieldName);
     if (!control) control = this.frmData.get(fieldName);
     if (!control) return false;
