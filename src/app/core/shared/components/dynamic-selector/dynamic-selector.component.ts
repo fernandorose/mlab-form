@@ -1,10 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   effect,
   EventEmitter,
+  inject,
   Input,
-  OnDestroy,
   OnInit,
   Output,
   signal,
@@ -12,8 +13,10 @@ import {
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
-import { debounceTime, distinctUntilChanged, Observable, Subject, takeUntil } from 'rxjs';
-import { CapitalizeTransformPipe } from '../../pipes/capitalize-transform.pipe';
+import { debounceTime, distinctUntilChanged, Observable, Subject } from 'rxjs';
+
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CapitalizeTransformPipe } from '@core/shared/pipes';
 
 @Component({
   selector: 'app-dynamic-selector',
@@ -23,7 +26,7 @@ import { CapitalizeTransformPipe } from '../../pipes/capitalize-transform.pipe';
   styleUrl: './dynamic-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
+export class DynamicSelector<T extends object> implements OnInit {
   @Input() loadData!: (page: number, filter: string) => Observable<T[]>;
   @Input() displayField!: keyof T;
   @Input() multiple = false;
@@ -38,7 +41,7 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
   private lastOpen = false;
 
   private filterSubject = new Subject<string>();
-  private destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
 
   selectedItem = signal<T | null>(null);
   selectedItems = signal<T[]>([]);
@@ -63,17 +66,12 @@ export class DynamicSelector<T extends object> implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.filterSubject
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((filter) => {
         this.filterText.set(filter);
         this.reset(filter);
         this.loadMore();
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges) {

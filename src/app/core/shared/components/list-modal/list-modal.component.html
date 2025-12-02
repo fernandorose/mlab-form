@@ -1,0 +1,89 @@
+<div class="modal-body p-4">
+  <div class="w-100 d-flex align-items-center">
+    <div class="w-100 pb-3">
+      <h1 class="fw-semibold">Ultimos registros</h1>
+    </div>
+  </div>
+  @if (loading()) {
+    <div
+      class="col-12 vh-25 d-flex flex-column justify-content-center align-items-center py-5 gap-4"
+    >
+      <div class="spinner-border text-info" role="status"></div>
+      <span class="text-info">Cargando lista...</span>
+    </div>
+  } @else {
+    <div class="table-responsive" style="max-height: 200vh; overflow-y: auto">
+      <table class="table table-light table-striped wide-table">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Análisis</th>
+            <th>Producto</th>
+            <th>No. Lote</th>
+            <th>Línea</th>
+            <th>Área</th>
+            <th>Operador</th>
+            <th>Procedencia</th>
+            <th>Cód. Empaque</th>
+            <th>Tipo Vehíc.</th>
+            <th>Cód. Vehíc.</th>
+            <th>Compartimento</th>
+            <th>Tipo Muestra</th>
+            <th>Lote Insp.</th>
+            <th>Transportista</th>
+            <th>Fec. Muestra</th>
+            <th>Hora Muestra</th>
+            <th>Fec. Entrega</th>
+            <th>Hora Entrega</th>
+            <th>Ordinaria</th>
+            <th>Observaciones</th>
+            <th>Etiqueta</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (data of list(); track data.ZQT_RMUEST_ID) {
+            <tr>
+              <td>{{ data.ZQT_RMUEST_ID }}</td>
+              <td>{{ data.ANALISIS }}</td>
+              <td>{{ data.PRODUCTO | capitalizeTransform }}</td>
+              <td>{{ data.NO_FOLIO }}</td>
+              <td>{{ data.LINEA | capitalizeTransform }}</td>
+              <td>{{ data.AREA | capitalizeTransform }}</td>
+              <td>{{ data.OPERADOR | titlecase }}</td>
+              <td>{{ data.PROCEDENCIA | capitalizeTransform }}</td>
+              <td>{{ data.CODIGO_EMPAQUE }}</td>
+              <td>{{ data.TIPO_VEHICULO }}</td>
+              <td>{{ data.CODIGO_VEHICULO }}</td>
+              <td>{{ data.COMPARTIMENTO }}</td>
+              <td>{{ data.TIPO_MUESTRA }}</td>
+              <td>{{ data.LOTE_INSP }}</td>
+              <td>{{ data.TRANSPORTISTA }}</td>
+              <td>{{ data.FECHA_MUESTRA | dateTransform }}</td>
+              <td>{{ data.HORA_MUESTRA | timeTransform }}</td>
+              <td>{{ data.FECHA_ENTREGA | dateTransform }}</td>
+              <td>{{ data.HORA_ENTREGA | timeTransform }}</td>
+              <td>{{ data.ORDINARIA }}</td>
+              <td>{{ data.OBSERVACIONES }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="26" class="text-center text-muted p-5 fs-5">
+                No hay muestras para mostrar en este momento.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  <div class="w-100 d-flex justify-content-end pt-4">
+    <button
+      (click)="cancel()"
+      [ngStyle]="{ background: colors.CANCEL }"
+      class="w-100 btn btn-lg rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
+    >
+      Cerrar
+    </button>
+  </div>
+</div>

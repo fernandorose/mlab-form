@@ -2,9 +2,10 @@ import { NgStyle } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
-import { ColorEnum } from '../../../../module/coverage/enums/colors.enu';
-import { MlabFormItf } from '../../../../module/service/mlab.service';
-import { CapitalizeTransformPipe } from '../../pipes/capitalize-transform.pipe';
+
+import { MlabFormItf } from '@core/coverage/interface/mlab.itf';
+import { CapitalizeTransformPipe } from '@core/shared/pipes';
+import { ColorEnum } from '@modMlab/coverage/enums';
 
 @Component({
   selector: 'app-confirmation-modal',

@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { getRoundedHour, getTimeString } from '../../core/shared/helper/time-date.hlp';
+
+import { getRoundedHour, getTimeString } from '@core/shared/helper';
 
 @Injectable({ providedIn: 'root' })
 export class TimeService {

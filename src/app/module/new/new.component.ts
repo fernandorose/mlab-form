@@ -4,19 +4,22 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 import Swal from 'sweetalert2';
-import { BasePaginationItf } from '../../core/coverage/interface/http.itf';
-import { ConfirmationModal } from '../../core/shared/components/confirmation-modal/confirmation-modal.component';
-import { DynamicSelector } from '../../core/shared/components/dynamic-selector/dynamic-selector.component';
-import { syncFormControlsHelper } from '../../core/shared/helper/dyn-form.hlp';
-import { transformDate, transformTime } from '../../core/shared/helper/time-date.hlp';
-import { CapitalizeTransformPipe } from '../../core/shared/pipes/capitalize-transform.pipe';
-import { areaConfig, fields, VALIDATOR_MAX_LENGTH_MAP } from '../coverage/data';
-import { ColorEnum } from '../coverage/enums/colors.enu';
-import { FieldNames } from '../coverage/enums/fields.enu';
-import { globalMlabItf, MlabFormItf, MlabService } from '../service/mlab.service';
-import { DynamicSelectorService } from '../service/selector.service';
-import { TimeService } from '../service/time.service';
-import { ValidatorHandlerService } from '../service/validator.service';
+
+import { BasePaginationItf } from '@core/coverage/interface/http.itf';
+import { globalMlabItf, MlabFormItf } from '@core/coverage/interface/mlab.itf';
+import { ConfirmationModal } from '@core/shared/components/confirmation-modal/confirmation-modal.component';
+import { DynamicSelector } from '@core/shared/components/dynamic-selector/dynamic-selector.component';
+import { ListModal } from '@core/shared/components/list-modal/list-modal.component';
+import { syncFormControlsHelper, transformDate, transformTime } from '@core/shared/helper';
+import { CapitalizeTransformPipe } from '@core/shared/pipes';
+import { areaConfig, fields, VALIDATOR_MAX_LENGTH_MAP } from '@modMlab/coverage/data';
+import { ColorEnum, FieldNames } from '@modMlab/coverage/enums';
+import {
+  DynamicSelectorService,
+  MlabService,
+  TimeService,
+  ValidatorHandlerService,
+} from '@modMlab/service';
 
 type AreaKey = keyof typeof areaConfig;
 type AreaConfigEntry = { BASE_FIELDS: string[]; CONDITIONAL_FIELDS?: Record<string, string[]> };
@@ -95,6 +98,8 @@ export class New {
   });
   public colors = ColorEnum;
   public VALIDATOR_MAX_LENGTH_MAP = VALIDATOR_MAX_LENGTH_MAP;
+  showConfirmModal = false;
+  showListModal = false;
   readonly fieldLabelMap: Record<string, string> = {
     area: 'Área',
     remarks: 'Observaciones',
@@ -129,8 +134,6 @@ export class New {
   onSelectorEmpty(field: string, isEmpty: boolean) {
     this.dynForm.get(field)?.setErrors(isEmpty ? { empty: true } : null);
   }
-
-  showConfirmModal = false;
 
   onSave() {
     this.frmData.markAllAsTouched();
@@ -181,13 +184,12 @@ export class New {
       displayData[label] = requestBody[key];
     }
     this.submittedData.set(requestBody);
-    const modalRef = this.modalSrv.open(ConfirmationModal, {
-      size: 'lg',
+    const confirmationModalRef = this.modalSrv.open(ConfirmationModal, {
       backdrop: 'static',
       centered: true,
     });
-    modalRef.componentInstance.data = displayData;
-    modalRef.result.then((result) => {
+    confirmationModalRef.componentInstance.data = displayData;
+    confirmationModalRef.result.then((result) => {
       if (result === 'confirm') {
         this.submitFinal();
         Swal.fire({
@@ -206,6 +208,14 @@ export class New {
       next: () => {
         this.submittedData.set(body);
       },
+    });
+  }
+
+  public list() {
+    this.modalSrv.open(ListModal, {
+      size: 'xl',
+      backdrop: 'static',
+      centered: true,
     });
   }
 

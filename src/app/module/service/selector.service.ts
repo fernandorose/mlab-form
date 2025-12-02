@@ -1,15 +1,16 @@
 import { inject, Injectable, Signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { globalMlabItf, MlabService } from '../service/mlab.service';
 
+import { globalMlabItf } from '@core/coverage/interface/mlab.itf';
 import {
   compartimientoFurgon,
   compartimientoTolva,
   linea,
   muestra,
   transportista,
-} from '../coverage/data';
-import { FieldNames } from '../coverage/enums/fields.enu';
+} from '@modMlab/coverage/data';
+import { FieldNames } from '@modMlab/coverage/enums';
+import { MlabService } from '@modMlab/service/mlab.service';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicSelectorService {

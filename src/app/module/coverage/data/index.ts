@@ -1,5 +1,5 @@
-import { globalMlabItf } from '../../service/mlab.service';
-import { FieldNames, FieldTypes } from '../enums/fields.enu';
+import { globalMlabItf } from '@core/coverage/interface';
+import { FieldNames, FieldTypes } from '@modMlab/coverage/enums';
 
 export const linea = ['LINEA 1', 'LINEA 2'];
 

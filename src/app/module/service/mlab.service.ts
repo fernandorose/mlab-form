@@ -1,37 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { HTTPEDResItf, HTTPResItf } from '../../core/coverage/interface/http.itf';
 
-export interface globalMlabItf {
-  MANDT: string;
-  ID: string;
-  NOMBRE: string;
-  TIPO_ID: string;
-}
-
-export interface MlabFormItf {
-  area: string;
-  analysis: string[];
-  sampling_date: string;
-  sampling_time: string;
-  delivery_date: string;
-  delivery_time: string;
-  remarks: string;
-  product?: string;
-  folio_number?: string;
-  line?: string;
-  operator?: string;
-  origin?: string;
-  sample_type?: string;
-  inspection_lot?: string;
-  package_code?: string;
-  vehicle_type?: string;
-  vehicle_code?: string;
-  compartment?: string[];
-  carrier?: string;
-  [key: string]: any;
-}
+import { HTTPEDResItf, HTTPResItf } from '@core/coverage/interface/http.itf';
+import { globalMlabItf, MlabFormItf, MlabListItf } from '@core/coverage/interface/mlab.itf';
 
 @Injectable({
   providedIn: 'root',
@@ -43,6 +15,21 @@ export class MlabService {
 
   create(body: MlabFormItf) {
     return this._http.post(`${this._url}/sap/sample`, body, {
+      headers: { Authorization: `Bearer ${this._apikey}` },
+    });
+  }
+
+  getList(paramsData: {
+    year: string;
+    page: number;
+    limit: number;
+  }): Observable<HTTPResItf<HTTPEDResItf<MlabListItf[]>>> {
+    let params = new HttpParams()
+      .set('year', paramsData.year)
+      .set('page', String(paramsData.page))
+      .set('limit', String(paramsData.limit));
+    return this._http.get<HTTPResItf<HTTPEDResItf<MlabListItf[]>>>(`${this._url}/sap/sample`, {
+      params,
       headers: { Authorization: `Bearer ${this._apikey}` },
     });
   }
