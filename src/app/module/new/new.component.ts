@@ -105,21 +105,21 @@ export class New {
     remarks: 'Observaciones',
     analysis: 'Análisis',
     compartment: 'Compartimentos',
-    line: 'Linea',
+    line: 'Línea',
     product: 'Producto',
-    folio_number: 'Numero de lote',
+    folio_number: 'Número de lote',
     operator: 'Trabajador',
     origin: 'Procedencia',
     sample_type: 'Tipo de muestra',
-    inspection_lot: 'Lote de inspeccion',
+    inspection_lot: 'Lote de inspección',
     package_code: 'Paquete',
-    vehicle_code: 'Codigo de vehiculo',
-    vehicle_type: 'Tipo de vehiculo',
+    vehicle_code: 'Código de vehículo',
+    vehicle_type: 'Tipo de vehículo',
     carrier: 'Transportista',
-    delivery_date: 'Fecha de Entrega',
-    sampling_date: 'Fecha de Muestreo',
-    sampling_time: 'Hora de Muestreo',
-    delivery_time: 'Hora de Entrega',
+    delivery_date: 'Fecha de entrega',
+    sampling_date: 'Fecha de muestreo',
+    sampling_time: 'Hora de muestreo',
+    delivery_time: 'Hora de entrega',
   };
 
   validatorDisplay(field: string) {
@@ -185,6 +185,7 @@ export class New {
     }
     this.submittedData.set(requestBody);
     const confirmationModalRef = this.modalSrv.open(ConfirmationModal, {
+      size: 'lg',
       backdrop: 'static',
       centered: true,
     });

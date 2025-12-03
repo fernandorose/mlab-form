@@ -1,18 +1,19 @@
 <main>
   <div class="modal-header d-flex flex-column align-items-start">
     <h2 class="modal-title fw-semibold" [ngStyle]="{ color: colors.RESOLUTION }">
-      Detalles de la Solicitud
+      Detalles de la solicitud
     </h2>
-    <p>Por favor confirme que los datos ingresados sean correctos</p>
+    <p>Confirme que los datos ingresados sean correctos</p>
   </div>
   <div class="modal-body">
-    <table class="table table-borderless">
+    <table class="table table-striped table-borderless">
       <tbody>
         @for (key of dataKeys(); track key) {
           @if (shouldDisplay(key, data[key])) {
             <tr>
-              <td class="text-capitalize fw-semibold" style="width: 35%">{{ formatKey(key) }}</td>
-
+              <td class="text-capitalize fw-semibold" style="width: 35%">
+                {{ formatKey(key) }}
+              </td>
               <td>
                 @if (isArray(data[key])) {
                   <ul class="mb-0">
@@ -24,7 +25,11 @@
                   </ul>
                 } @else {
                   <span>
-                    {{ data[key] | capitalizeTransform }}
+                    @if (isNameField(key)) {
+                      {{ data[key] | titlecase }}
+                    } @else {
+                      {{ data[key] | capitalizeTransform }}
+                    }
                   </span>
                 }
               </td>
@@ -58,7 +63,7 @@
       [ngStyle]="{ background: colors.PRIMARYDARK }"
     >
       <i-feather name="save"></i-feather>
-      Confirmar y Enviar
+      Confirmar y enviar
     </button>
   </div>
 </main>

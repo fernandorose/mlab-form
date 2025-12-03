@@ -15,7 +15,7 @@
     <div class="table-responsive" style="max-height: 200vh; overflow-y: auto">
       <table class="table table-light table-striped wide-table">
         <thead class="table-dark">
-          <tr>
+          <tr style="font-size: 0.9rem">
             <th>#</th>
             <th>Análisis</th>
             <th>Producto</th>
@@ -43,7 +43,7 @@
 
         <tbody>
           @for (data of list(); track data.ZQT_RMUEST_ID) {
-            <tr>
+            <tr style="font-size: 0.9rem">
               <td>{{ data.ZQT_RMUEST_ID }}</td>
               <td>{{ data.ANALISIS }}</td>
               <td>{{ data.PRODUCTO | capitalizeTransform }}</td>
@@ -65,6 +65,7 @@
               <td>{{ data.HORA_ENTREGA | timeTransform }}</td>
               <td>{{ data.ORDINARIA }}</td>
               <td>{{ data.OBSERVACIONES }}</td>
+              <td>Descargar</td>
             </tr>
           } @empty {
             <tr>

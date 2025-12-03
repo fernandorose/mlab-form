@@ -10,7 +10,7 @@ import {
   transportista,
 } from '@modMlab/coverage/data';
 import { FieldNames } from '@modMlab/coverage/enums';
-import { MlabService } from '@modMlab/service/mlab.service';
+import { MlabService } from '@modMlab/service/mlab.srv';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicSelectorService {

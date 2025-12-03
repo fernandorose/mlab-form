@@ -1,4 +1,4 @@
-import { NgClass, NgStyle, TitleCasePipe } from '@angular/common';
+import { NgStyle, TitleCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,7 +20,6 @@ import { tap } from 'rxjs';
 @Component({
   selector: 'app-list-modal',
   imports: [
-    NgClass,
     NgStyle,
     FeatherModule,
     DateTransformPipe,
