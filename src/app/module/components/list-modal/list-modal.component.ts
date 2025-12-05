@@ -83,7 +83,7 @@ export class ListModal implements OnInit {
     };
     this._mlabSrv.getPdf(pdfData).subscribe({
       next: (res) => {
-        window.open(`${this._portalUrl}/media/lab/sample/ticket/media/${res.data.key}`, '_blank');
+        window.open(`${this._portalUrl}/media/lab/sample/ticket/media/${res.data.key}`);
       },
     });
   }
