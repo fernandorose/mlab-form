@@ -1,69 +1,106 @@
 <div class="cont">
-  <!-- ⭐ Contenedor principal del selector que debe ser la referencia de posición -->
   <div class="selector-wrapper" (click)="toggle()">
+    @if (multiple()) {
+      <span class="sub text-muted bg-light p-1 border"> Multiples opciones</span>
+    }
     <div class="selector-cont">
-      <div class="selector">
-        <span class="selector-content-display">
-          @if (!multiple) {
-            {{
-              selectedItem()
-                ? (selectedItem()![displayField] | capitalizeTransform)
-                : 'Seleccione...'
-            }}
-          } @else if (selectedItems().length === 0) {
-            <!-- Si es múltiple y no hay ítems seleccionados -->
-            Seleccione...
-          } @else {
-            <!-- ⭐ CAMBIO: Iteramos sobre los ítems para mostrar las "píldoras" -->
-            @for (item of selectedItems(); track item[idField]) {
-              <span class="selected-chip">
-                {{ item[displayField] | capitalizeTransform }}
+      <div class="d-flex w-100">
+        <div class="selector">
+          <span class="selector-content-display">
+            @if (!multiple()) {
+              <span>
+                {{
+                  selectedItem()
+                    ? (selectedItem()![displayField()] | capitalizeTransform)
+                    : 'Seleccione...'
+                }}
               </span>
+            } @else if (selectedItems().length === 0) {
+              Seleccione...
+            } @else {
+              @for (item of selectedItems(); track item[idField()]) {
+                <span
+                  class="selected-chip"
+                  [ngStyle]="
+                    isLong(item)
+                      ? {
+                          'max-width': '215px',
+                          display: 'inline-block',
+                          'white-space': 'nowrap',
+                          overflow: 'hidden',
+                          'text-overflow': 'ellipsis',
+                        }
+                      : {}
+                  "
+                >
+                  {{ item[displayField()] | capitalizeTransform }}
+                </span>
+              }
             }
-          }
+          </span>
+        </div>
+
+        <span class="arrow">
+          <span [class.rotate]="isOpen()" class="fs-6">
+            <i-feather name="chevron-down"></i-feather>
+          </span>
         </span>
       </div>
-
-      <span class="arrow">
-        <span [class.rotate]="isOpen()" class="fs-6">
-          <i-feather name="chevron-down"></i-feather>
+      @if (selectedItem() || selectedItems().length > 0) {
+        <span
+          class="clear-button shadow"
+          [ngStyle]="{ background: colors.CANCEL }"
+          (click)="$event.stopPropagation(); onClear()"
+        >
+          <i-feather name="x"></i-feather>
         </span>
-      </span>
+      }
     </div>
   </div>
-  <!-- Contenido de la lista: POSICIONADO ABSOLUTAMENTE EN BASE AL WRAPPER -->
-  <div class="selector-content" [class.show]="isOpen()">
-    <div class="search-input-wrapper">
-      <input
-        type="text"
-        [(ngModel)]="filterTextInternal"
-        (ngModelChange)="onFilterInput($event)"
-        placeholder="Buscar..."
-        class="search-input"
-      />
-      <i-feather name="search" class="search-icon"></i-feather>
+
+  <div class="selector-content shadow" [class.show]="isOpen()">
+    <div class="selector-content-view">
+      @if (searchable()) {
+        <div class="search-input-wrapper">
+          <input
+            type="text"
+            [(ngModel)]="filterTextInternal"
+            (ngModelChange)="onFilterInput($event)"
+            placeholder="Buscar..."
+            class="search-input"
+          />
+          <i-feather name="search" class="search-icon"></i-feather>
+        </div>
+      }
+
+      <ul class="list-items" [class.no-search]="!searchable()" (scroll)="onScroll($event)">
+        @for (item of items(); track item[idField()]) {
+          <li (click)="select(item)" [class.selected]="isSelected(item)">
+            @if (multiple()) {
+              <span class="checkbox" [class.checked]="isSelected(item)"></span>
+            }
+
+            {{ item[displayField()] | capitalizeTransform }}
+          </li>
+        }
+
+        @if (loading()) {
+          <div class="loading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Cargando…
+          </div>
+        }
+
+        @if (!hasMore() && items().length > 0 && !loading()) {
+          <div class="no-more-data">
+            <small>No hay más datos por cargar</small>
+          </div>
+        }
+
+        @if (!hasMore() && items().length === 0 && !loading()) {
+          <div class="no-more">No hay resultados</div>
+        }
+      </ul>
     </div>
-
-    <!-- Fin Campo de búsqueda -->
-
-    <!-- Lista de elementos con scroll -->
-    <ul class="list-items" [class.no-search]="!searchable" (scroll)="onScroll($event)">
-      @for (item of items(); track $index) {
-        <li (click)="select(item)" [class.selected]="isSelected(item)">
-          @if (multiple) {
-            <span class="checkbox" [class.checked]="isSelected(item)"></span>
-          }
-          {{ item[displayField] | capitalizeTransform }}
-        </li>
-      }
-
-      @if (loading()) {
-        <div class="loading">Cargando…</div>
-      }
-
-      @if (!hasMore() && items().length === 0 && !loading()) {
-        <div class="no-more">No hay resultados</div>
-      }
-    </ul>
   </div>
 </div>

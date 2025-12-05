@@ -7,19 +7,15 @@ import Swal from 'sweetalert2';
 
 import { BasePaginationItf } from '@core/coverage/interface/http.itf';
 import { globalMlabItf, MlabFormItf } from '@core/coverage/interface/mlab.itf';
-import { ConfirmationModal } from '@core/shared/components/confirmation-modal/confirmation-modal.component';
+import { DynamicSelectorService } from '@core/service';
 import { DynamicSelector } from '@core/shared/components/dynamic-selector/dynamic-selector.component';
-import { ListModal } from '@core/shared/components/list-modal/list-modal.component';
 import { syncFormControlsHelper, transformDate, transformTime } from '@core/shared/helper';
 import { CapitalizeTransformPipe } from '@core/shared/pipes';
+import { ConfirmationModal } from '@modMlab/components/confirmation-modal/confirmation-modal.component';
+import { ListModal } from '@modMlab/components/list-modal/list-modal.component';
 import { areaConfig, fields, VALIDATOR_MAX_LENGTH_MAP } from '@modMlab/coverage/data';
 import { ColorEnum, FieldNames } from '@modMlab/coverage/enums';
-import {
-  DynamicSelectorService,
-  MlabService,
-  TimeService,
-  ValidatorHandlerService,
-} from '@modMlab/service';
+import { MlabService, TimeService, ValidatorHandlerService } from '@modMlab/service';
 
 type AreaKey = keyof typeof areaConfig;
 type AreaConfigEntry = { BASE_FIELDS: string[]; CONDITIONAL_FIELDS?: Record<string, string[]> };
@@ -47,15 +43,17 @@ interface AreaState {
         inset: 0;
         z-index: -1;
         background-color: #eeeeee;
-        opacity: 0.8;
+        opacity: 0.6;
         background-image:
           linear-gradient(#ffffff 1px, transparent 1px),
           linear-gradient(to right, #ffffff 1px, #eeeeee 1px);
         background-size: 20px 20px;
-        /* background: radial-gradient(147.1% 100% at 50% 0%, #ffffff 0%, #c4c4c4 100%); */
-        /* background-repeat: no-repeat;
-    background-size: cover;
-    pointer-events: none; */
+      }
+      .background2 {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background: linear-gradient(to bottom, #ffffff, #acacacff);
       }
     `,
   ],
@@ -82,6 +80,7 @@ export class New {
     obs: [''],
     area: ['', [Validators.required]],
   });
+  public areaSelected = signal(this.frmData.get('area')?.value);
   public fieldNames = FieldNames;
   public dynForm: FormGroup<Record<string, any>> = this._fb.group({});
   public todayDate = signal(new Date());
@@ -121,9 +120,36 @@ export class New {
     sampling_time: 'Hora de muestreo',
     delivery_time: 'Hora de entrega',
   };
+  public areaEmpty = computed(() => !this.selectedArea() || !this.selectedArea()?.NOMBRE);
+  public noFields = computed(() => {
+    return !this.visibleFields() || this.visibleFields().length === 0;
+  });
 
   validatorDisplay(field: string) {
     return this.validatorSrv.getDisplay(field);
+  }
+
+  public onAnalisisCleared() {
+    this.frmData.get(FieldNames.ANALYSIS)?.setValue([]);
+    this.frmData.get(FieldNames.ANALYSIS)?.markAsTouched();
+  }
+
+  public onAreaCleared() {
+    this.frmData.get(FieldNames.AREA)?.setValue('');
+    this.frmData.get(FieldNames.AREA)?.markAsTouched();
+    this.selectedArea.set(null);
+    this.selectedProcedenciaValue.set(null);
+    this.dynForm.reset();
+    Object.keys(this.dynForm.controls).forEach((key) => {
+      this.dynForm.removeControl(key);
+    });
+    this.validatorSrv.reset();
+    this.resetSelectors.update((v) => v + 1);
+  }
+
+  public onDynamicSelectorCleared(field: string) {
+    this.dynForm.get(field)?.setValue('');
+    this.dynForm.get(field)?.markAsTouched();
   }
 
   onValidatorInput(field: string, value: string) {
@@ -135,81 +161,119 @@ export class New {
     this.dynForm.get(field)?.setErrors(isEmpty ? { empty: true } : null);
   }
 
-  onSave() {
+  public confirmData() {
+    if (this.selectedArea() && this.visibleFields().length === 0) {
+      Swal.fire({
+        title: 'Esta área no tiene campos configurados',
+        text: 'No puedes continuar sin campos. Contacte con TI',
+        icon: 'error',
+        confirmButtonColor: this.colors.RESOLUTION,
+      });
+      this.markFormsTouched();
+      return;
+    }
+    this.markFormsTouched();
+    if (this.hasInvalidForms()) return;
+    const formBaseValues = this.frmData.value;
+    const dynamicValues = this.buildDynamicValues();
+    const requestBody = this.buildRequestBody(formBaseValues, dynamicValues);
+    const cleanedBody = this.cleanRequestBody(requestBody);
+    const displayData = this.buildDisplayData(cleanedBody);
+    this.submittedData.set(cleanedBody);
+    this.openConfirmationModal(displayData);
+  }
+
+  private markFormsTouched() {
     this.frmData.markAllAsTouched();
     this.dynForm.markAllAsTouched();
-    if (this.frmData.invalid || this.dynForm.invalid) return;
+  }
+
+  private hasInvalidForms(): boolean {
+    if (this.frmData.invalid || this.dynForm.invalid) return true;
+
     const validatorStatus = this.validatorSrv.status();
     const invalidFields = Object.keys(validatorStatus).filter((f) => validatorStatus[f] === false);
-    if (invalidFields.length > 0) return;
-    const formBaseValues = this.frmData.value;
-    const formDynamicValues = { ...this.dynForm.value };
-    for (const field of Object.keys(formDynamicValues)) {
+    return invalidFields.length > 0;
+  }
+
+  private buildDynamicValues() {
+    const result = { ...this.dynForm.value };
+
+    for (const field of Object.keys(result)) {
       if (field === FieldNames.FOLIO_NUMBER) {
-        formDynamicValues[field] = this.validatorSrv.inputValue()[field];
+        result[field] = this.validatorSrv.inputValue()[field];
       } else {
-        const validatedObj = this.validatorSrv.result()[field];
-        if (validatedObj) formDynamicValues[field] = validatedObj.NOMBRE ?? validatedObj.ID;
+        const validated = this.validatorSrv.result()[field];
+        if (validated) result[field] = validated.NOMBRE ?? validated.ID;
       }
     }
-    const { compartimientotolva, compartimientofurgon, ...otherDynamicValues } = formDynamicValues;
-    const compartmentsValue = compartimientotolva || compartimientofurgon;
-    const requestBody: MlabFormItf = {
-      area: formBaseValues.area ?? '',
-      remarks: formBaseValues.obs || '',
-      analysis: formBaseValues.analysis?.filter((a) => a) ?? [],
-      ...otherDynamicValues,
-      compartment: compartmentsValue ?? [],
+
+    return result;
+  }
+
+  private buildRequestBody(formBase: any, dynamicValues: any): MlabFormItf {
+    const { compartimientotolva, compartimientofurgon, ...otherDynamic } = dynamicValues;
+    return {
+      area: formBase.area ?? '',
+      remarks: formBase.obs || '',
+      analysis: formBase.analysis?.filter((a: string) => a) ?? [],
+      ...otherDynamic,
+      compartment: compartimientotolva || compartimientofurgon || [],
       delivery_date: transformDate(this.todayDate()),
       sampling_date: transformDate(this.todayDate()),
       sampling_time: transformTime(this.time.roundedTime()),
       delivery_time: transformTime(this.time.getCurrentTime()),
     };
-    for (const key in requestBody) {
-      const value = requestBody[key];
-      if (
+  }
+
+  private cleanRequestBody(body: any) {
+    const cleaned = { ...body };
+    for (const key in cleaned) {
+      const value = cleaned[key];
+      const remove =
         value === null ||
         value === undefined ||
         (typeof value === 'string' && value.trim() === '') ||
-        (Array.isArray(value) && value.length === 0)
-      ) {
-        delete requestBody[key];
-      }
+        (Array.isArray(value) && value.length === 0);
+
+      if (remove) delete cleaned[key];
     }
+
+    return cleaned;
+  }
+
+  private buildDisplayData(body: any) {
     const HIDDEN_FIELDS = ['delivery_date', 'sampling_date', 'sampling_time', 'delivery_time'];
     const displayData: Record<string, any> = {};
-    for (const key of Object.keys(requestBody)) {
+    for (const key of Object.keys(body)) {
       if (HIDDEN_FIELDS.includes(key)) continue;
       const label = this.fieldLabelMap[key] ?? key;
-      displayData[label] = requestBody[key];
+      displayData[label] = body[key];
     }
-    this.submittedData.set(requestBody);
-    const confirmationModalRef = this.modalSrv.open(ConfirmationModal, {
+
+    return displayData;
+  }
+
+  private openConfirmationModal(displayData: any) {
+    const ref = this.modalSrv.open(ConfirmationModal, {
       size: 'lg',
       backdrop: 'static',
       centered: true,
     });
-    confirmationModalRef.componentInstance.data = displayData;
-    confirmationModalRef.result.then((result) => {
-      if (result === 'confirm') {
-        this.submitFinal();
-        Swal.fire({
-          title: 'Datos enviados con exito',
-          icon: 'success',
-          confirmButtonColor: this.colors.RESOLUTION,
-          confirmButtonText: 'Aceptar',
-        });
-      }
-    });
-  }
-
-  submitFinal() {
-    const body = this.submittedData();
-    this._mlabSrv.create(body).subscribe({
-      next: () => {
-        this.submittedData.set(body);
-      },
-    });
+    ref.componentInstance.data = displayData;
+    ref.result
+      .then((result) => {
+        if (result === 'confirm') {
+          this.onSave();
+          Swal.fire({
+            title: 'Datos enviados con exito',
+            icon: 'success',
+            confirmButtonColor: this.colors.RESOLUTION,
+            confirmButtonText: 'Aceptar',
+          });
+        }
+      })
+      .catch(() => {});
   }
 
   public list() {
@@ -247,12 +311,10 @@ export class New {
 
   public onSelectorSelected(field: string, event: globalMlabItf | globalMlabItf[]) {
     const items = Array.isArray(event) ? event : [event];
-
     if (this.isFieldMultiple(field)) {
       this.dynForm.get(field)?.setValue(items.map((i) => i.ID));
       return;
     }
-
     const item = items[0];
     const value = this.extractSelectorValue(field, item);
     this.dynForm.get(field)?.setValue(value);
@@ -268,9 +330,9 @@ export class New {
     this.validatorSrv.reset();
     this.validatorSrv.setArea(area.NOMBRE.toUpperCase());
     this.resetSelectors.update((v) => v + 1);
+    this.selectedProcedenciaValue.set(null);
     this.frmData.controls[FieldNames.AREA].setValue(area.NOMBRE);
     this.selectedArea.set(area);
-    this.selectedProcedenciaValue.set(null);
     this.syncFormControls(this.visibleFields());
   }
 
@@ -304,5 +366,14 @@ export class New {
     const shouldShow = control.touched && control.invalid;
     if (shouldShow) return control.hasError('empty') || control.hasError('required');
     return false;
+  }
+
+  onSave() {
+    const body = this.submittedData();
+    this._mlabSrv.create(body).subscribe({
+      next: () => {
+        this.submittedData.set(body);
+      },
+    });
   }
 }

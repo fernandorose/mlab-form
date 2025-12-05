@@ -6,6 +6,29 @@
 
 :root {
   overscroll-behavior: none;
+  --accent-light: #00DB89;
+  --primary-light: #0013DB;
+  --primary-dark: #0058DB;
+  --primary: #009CDC;
+  --accent: #00DBD4;
+  --title: #161616;
+  --text: #6B6B6B;
+  --divider: #9DAABD;
+  --card: #EAEAEA;
+  --borders: #cecece;
+  --white: #FFFFFF;
+  --base: #00ACC1;
+  --resolution: #43A047;
+  --denegate: #FB8C00;
+  --cancel: #E53935;
+  --asignation: #009688;
+  --process: #E91E63;
+  --complete: #0A2342;
+  --construction: #1976D2;
+  --analysis: #9C27B0;
+  --authorization: #283593;
+  --planeation: #795548;
+  --security: #4527A0;
 }
 
 /* Importing Bootstrap SCSS file. */

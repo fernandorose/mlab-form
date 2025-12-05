@@ -56,3 +56,18 @@ export interface MlabListItf {
   COMPARTIMENTO: string;
   TRANSPORTISTA: string;
 }
+
+export interface MlabPdfItf {
+  folio: string;
+  fecha: string;
+  hora: string;
+  lote: string;
+  area: string;
+  material: string;
+  compartimento: string;
+  analisisRequerido: string;
+  nombreOperador: string;
+  codigoVehiculo: string;
+  loteInspeccion: string;
+  puntoMuestreo: string;
+}

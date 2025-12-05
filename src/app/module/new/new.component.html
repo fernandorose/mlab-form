@@ -1,4 +1,5 @@
 <div class="background"></div>
+<div class="background2"></div>
 <main class="container py-3 d-flex flex-column gap-2 justify-content-center align-items-center">
   <div class="col-lg-5 col-md-8 d-flex flex-column gap-2">
     <div class="w-100">
@@ -11,7 +12,7 @@
         Últimos registros
       </button>
     </div>
-    <form class="border shadow-lg rounded-3 p-4 bg-white" [formGroup]="frmData">
+    <form class="shadow-lg rounded-3 p-4 bg-white" [formGroup]="frmData">
       <div class="pb-3 d-flex flex-column align-items-center">
         <small class="d-block text-muted">Registro de muestras para laboratorio</small>
         <h1 class="fw-semibold" [ngStyle]="{ color: colors.PRIMARYDARK }">Alta de muestras</h1>
@@ -36,6 +37,8 @@
             displayField="NOMBRE"
             [idField]="'ID'"
             [multiple]="true"
+            [searchable]="true"
+            (cleared)="onAnalisisCleared()"
             (selectedMultiple)="onAnalisisSelected($event)"
           />
           @if (shouldShowRequiredError(fieldNames.ANALYSIS)) {
@@ -48,7 +51,10 @@
           <label class="form-label fw-semibold">Área</label>
           <app-dynamic-selector
             [loadData]="getSelectorLoader(fieldNames.AREA)"
+            [idField]="'ID'"
             displayField="NOMBRE"
+            [searchable]="true"
+            (cleared)="onAreaCleared()"
             (selected)="onAreaSelected($event)"
           />
           @if (shouldShowRequiredError(fieldNames.AREA)) {
@@ -61,14 +67,25 @@
 
       <section class="mt-3">
         <hr />
-        @if (frmData.get('area')?.value === '') {
+        @if (areaEmpty()) {
           <div
-            class="text-center py-3 rounded-3 shadow-sm border-0 text-white"
+            class="text-center py-3 rounded-3 shadow-sm border-0 text-white d-flex align-items-center justify-content-center gap-2"
             [ngStyle]="{ background: colors.DIVIDER }"
           >
             <i-feather name="alert-circle"></i-feather>
             <span class="fw-semibold">Seleccione un área</span>
             para cargar los campos.
+          </div>
+        } @else if (noFields()) {
+          <div
+            class="text-center py-3 rounded-3 shadow-sm border-0 text-white d-flex flex-column align-items-center"
+            [ngStyle]="{ background: colors.CANCEL }"
+          >
+            <div class="d-flex">
+              <i-feather name="info"></i-feather>
+              <span class="">El área seleccionada no tiene formulario.</span>
+            </div>
+            <span>Contacte con TI</span>
           </div>
         } @else {
           <form
@@ -102,7 +119,9 @@
                           [loadData]="getSelectorLoader(f.name)"
                           (emptyChange)="onSelectorEmpty(f.name, $event)"
                           [idField]="'ID'"
+                          [searchable]="true"
                           displayField="NOMBRE"
+                          (cleared)="onDynamicSelectorCleared(f.name)"
                           [multiple]="isFieldMultiple(f.name)"
                           (selected)="onSelectorSelected(f.name, $event)"
                           (selectedMultiple)="onSelectorSelected(f.name, $event)"
@@ -177,7 +196,7 @@
           <div class="w-100 d-flex gap-1">
             <button
               type="submit"
-              (click)="onSave()"
+              (click)="confirmData()"
               [ngStyle]="{ background: colors.PRIMARYDARK }"
               class="btn btn-lg w-100 py-2 rounded-3 shadow gap-2 d-flex justify-content-center fw-semibold text-white"
             >

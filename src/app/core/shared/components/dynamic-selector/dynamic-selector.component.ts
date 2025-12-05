@@ -3,55 +3,55 @@ import {
   Component,
   DestroyRef,
   effect,
-  EventEmitter,
   inject,
-  Input,
+  input,
   OnInit,
-  Output,
+  output,
   signal,
-  SimpleChanges,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
-import { debounceTime, distinctUntilChanged, Observable, Subject } from 'rxjs';
+import { debounceTime, delay, distinctUntilChanged, Observable, Subject } from 'rxjs';
 
+import { NgStyle } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CapitalizeTransformPipe } from '@core/shared/pipes';
+import { ColorEnum } from '@modMlab/coverage/enums';
 
 @Component({
   selector: 'app-dynamic-selector',
   standalone: true,
-  imports: [FeatherModule, FormsModule, ReactiveFormsModule, CapitalizeTransformPipe],
+  imports: [FeatherModule, FormsModule, ReactiveFormsModule, CapitalizeTransformPipe, NgStyle],
   templateUrl: './dynamic-selector.component.html',
   styleUrl: './dynamic-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DynamicSelector<T extends object> implements OnInit {
-  @Input() loadData!: (page: number, filter: string) => Observable<T[]>;
-  @Input() displayField!: keyof T;
-  @Input() multiple = false;
-  @Input() idField!: keyof T;
-  @Input() searchable = false;
-  @Input() resetTrigger: any;
-
-  @Output() emptyChange = new EventEmitter<boolean>();
-  @Output() selected = new EventEmitter<T>();
-  @Output() selectedMultiple = new EventEmitter<T[]>();
+  loadData = input.required<(page: number, filter: string) => Observable<T[]>>();
+  displayField = input.required<keyof T>();
+  multiple = input(false);
+  idField = input.required<keyof T>();
+  searchable = input(false);
+  resetTrigger = input<any>(undefined, { alias: 'resetTrigger' });
+  emptyChange = output<boolean>();
+  selected = output<T>();
+  selectedMultiple = output<T[]>();
+  cleared = output<void>();
 
   private lastOpen = false;
-
   private filterSubject = new Subject<string>();
   private destroyRef = inject(DestroyRef);
 
-  selectedItem = signal<T | null>(null);
-  selectedItems = signal<T[]>([]);
-  items = signal<T[]>([]);
-  page = signal(1);
-  hasMore = signal(true);
-  loading = signal(false);
-  isOpen = signal(false);
+  public selectedItem = signal<T | null>(null);
+  public selectedItems = signal<T[]>([]);
+  public items = signal<T[]>([]);
+  public page = signal(1);
+  public hasMore = signal(true);
+  public loading = signal(false);
+  public isOpen = signal(false);
   public filterTextInternal = '';
   public filterText = signal('');
+  public colors = ColorEnum;
 
   constructor() {
     effect(() => {
@@ -61,6 +61,13 @@ export class DynamicSelector<T extends object> implements OnInit {
         this.loadMore();
       }
       this.lastOpen = open;
+    });
+
+    effect(() => {
+      const triggerValue = this.resetTrigger();
+      if (triggerValue !== undefined) {
+        this.fullReset();
+      }
     });
   }
 
@@ -74,10 +81,10 @@ export class DynamicSelector<T extends object> implements OnInit {
       });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['resetTrigger'] && !changes['resetTrigger'].firstChange) {
-      this.fullReset();
-    }
+  isLong(item: T): boolean {
+    const value = item[this.displayField()];
+    const text = Array.isArray(value) ? (value[0] ?? '') : String(value ?? '');
+    return text.length > 30;
   }
 
   clearSelection() {
@@ -89,6 +96,18 @@ export class DynamicSelector<T extends object> implements OnInit {
     this.filterText.set('');
     this.filterTextInternal = '';
     this.emptyChange.emit(true);
+    this.isOpen.set(false);
+  }
+
+  onClear() {
+    this.selectedItems.set([]);
+    this.selectedItem.set(null);
+    this.filterText.set('');
+    this.items.set([]);
+    this.page.set(1);
+    this.hasMore.set(true);
+    this.cleared.emit();
+    this.isOpen.set(false);
   }
 
   fullReset() {
@@ -115,23 +134,25 @@ export class DynamicSelector<T extends object> implements OnInit {
     this.loading.set(true);
     const filter = this.filterText();
 
-    this.loadData(this.page(), filter).subscribe({
-      next: (data) => {
-        if (data.length === 0) {
+    this.loadData()(this.page(), filter)
+      .pipe(delay(400))
+      .subscribe({
+        next: (data) => {
+          if (data.length === 0) {
+            this.hasMore.set(false);
+          } else {
+            this.items.update((prev) => [...prev, ...data]);
+            this.page.update((p) => p + 1);
+          }
+        },
+        error: (err) => {
           this.hasMore.set(false);
-        } else {
-          this.items.update((prev) => [...prev, ...data]);
-          this.page.update((p) => p + 1);
-        }
-      },
-      error: (err) => {
-        this.hasMore.set(false);
-        this.loading.set(false);
-      },
-      complete: () => {
-        this.loading.set(false);
-      },
-    });
+          this.loading.set(false);
+        },
+        complete: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   onScroll(event: Event) {
@@ -141,7 +162,7 @@ export class DynamicSelector<T extends object> implements OnInit {
       listItemsElement === el &&
       !this.loading() &&
       this.hasMore() &&
-      el.scrollTop + el.clientHeight >= el.scrollHeight - 20
+      el.scrollTop + el.clientHeight >= el.scrollHeight - 7
     )
       this.loadMore();
   }
@@ -151,14 +172,16 @@ export class DynamicSelector<T extends object> implements OnInit {
   }
 
   isSelected(item: T): boolean {
-    const currentId = item[this.idField];
+    const currentId = item[this.idField()];
     if (currentId === null || currentId === undefined) return false;
-    if (!this.multiple) {
-      const selectedId = this.selectedItem()?.[this.idField];
+
+    if (!this.multiple()) {
+      const selectedId = this.selectedItem()?.[this.idField()];
       return selectedId !== null && selectedId !== undefined && selectedId === currentId;
     }
+
     return this.selectedItems().some((selected) => {
-      const selectedItemId = selected[this.idField];
+      const selectedItemId = selected[this.idField()];
       return (
         selectedItemId !== null && selectedItemId !== undefined && selectedItemId === currentId
       );
@@ -166,7 +189,7 @@ export class DynamicSelector<T extends object> implements OnInit {
   }
 
   select(item: T) {
-    if (this.multiple) {
+    if (this.multiple()) {
       this.toggleItem(item);
       return;
     }
@@ -179,8 +202,8 @@ export class DynamicSelector<T extends object> implements OnInit {
   toggleItem(item: T) {
     const arr = this.selectedItems();
     const exists = this.isSelected(item);
-    const currentId = item[this.idField];
-    const updated = exists ? arr.filter((x) => x[this.idField] !== currentId) : [...arr, item];
+    const currentId = item[this.idField()];
+    const updated = exists ? arr.filter((x) => x[this.idField()] !== currentId) : [...arr, item];
     this.selectedItems.set(updated);
     this.selectedMultiple.emit(updated);
     this.emptyChange.emit(updated.length === 0);

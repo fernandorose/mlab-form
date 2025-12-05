@@ -45,7 +45,11 @@
           @for (data of list(); track data.ZQT_RMUEST_ID) {
             <tr style="font-size: 0.9rem">
               <td>{{ data.ZQT_RMUEST_ID }}</td>
-              <td>{{ data.ANALISIS }}</td>
+              <td>
+                @for (list of data.ANALISIS.split(','); track $index) {
+                  <li>{{ list | capitalizeTransform }}</li>
+                }
+              </td>
               <td>{{ data.PRODUCTO | capitalizeTransform }}</td>
               <td>{{ data.NO_FOLIO }}</td>
               <td>{{ data.LINEA | capitalizeTransform }}</td>
@@ -65,7 +69,11 @@
               <td>{{ data.HORA_ENTREGA | timeTransform }}</td>
               <td>{{ data.ORDINARIA }}</td>
               <td>{{ data.OBSERVACIONES }}</td>
-              <td>Descargar</td>
+              <td (click)="getPdf(data)">
+                <button class="btn btn-sm btn-primary">
+                  <i-feather name="printer"></i-feather> Imprimir
+                </button>
+              </td>
             </tr>
           } @empty {
             <tr>
