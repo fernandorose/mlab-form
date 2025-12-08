@@ -41,13 +41,13 @@ export class DynamicSelector<T extends object> implements OnInit {
   private lastOpen = false;
   private filterSubject = new Subject<string>();
   private destroyRef = inject(DestroyRef);
-
   public selectedItem = signal<T | null>(null);
   public selectedItems = signal<T[]>([]);
   public items = signal<T[]>([]);
   public page = signal(1);
   public hasMore = signal(true);
   public loading = signal(false);
+  public error = signal(false);
   public isOpen = signal(false);
   public filterTextInternal = '';
   public filterText = signal('');
@@ -148,6 +148,7 @@ export class DynamicSelector<T extends object> implements OnInit {
         error: (err) => {
           this.hasMore.set(false);
           this.loading.set(false);
+          this.error.set(true);
         },
         complete: () => {
           this.loading.set(false);

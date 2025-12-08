@@ -15,6 +15,7 @@ import { ColorEnum } from '@modMlab/coverage/enums';
 import { MlabService } from '@modMlab/service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-list-modal',
@@ -46,13 +47,13 @@ import { FeatherModule } from 'angular-feather';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListModal implements OnInit {
-  private readonly _portalUrl = 'https://portalv3.indelpro.com/v3/api';
   private _mlabSrv = inject(MlabService);
   public activeModal = inject(NgbActiveModal);
   public list = signal<MlabListItf[] | []>([]);
   public colors = ColorEnum;
   public loading = signal(true);
   private destroyRef = inject(DestroyRef);
+  public error = signal(false);
 
   ngOnInit(): void {
     this._mlabSrv
@@ -62,6 +63,9 @@ export class ListModal implements OnInit {
         next: (data) => {
           this.loading.set(false);
           this.list.set(data.data.data);
+        },
+        error: () => {
+          this.error.set(true);
         },
       });
   }
@@ -83,7 +87,7 @@ export class ListModal implements OnInit {
     };
     this._mlabSrv.getPdf(pdfData).subscribe({
       next: (res) => {
-        window.open(`${this._portalUrl}/media/lab/sample/ticket/media/${res.data.key}`);
+        window.open(`${environment.portal_url}/media/lab/sample/ticket/media/${res.data.key}`);
       },
     });
   }

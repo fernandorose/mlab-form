@@ -4,6 +4,7 @@ import { map, Observable } from 'rxjs';
 
 import { HTTPEDResItf, HTTPResItf } from '@core/coverage/interface/http.itf';
 import { globalMlabItf, MlabFormItf, MlabListItf } from '@core/coverage/interface/mlab.itf';
+import { environment } from 'src/environments/environment';
 
 interface PdfResponseItf {
   key: string;
@@ -15,13 +16,12 @@ interface PdfResponseItf {
 })
 export class MlabService {
   private _http = inject(HttpClient);
-  private _apikey = 'sk_service_def456uvw012';
-  private readonly _url = 'http://localhost:3010/v1/api';
-  // private readonly _portalUrl = 'http://localhost:3800/v3/api';
-  private readonly _portalUrl = 'https://portalv3.indelpro.com/v3/api';
+  private get _apikey() {
+    return localStorage.getItem('apikey') ?? '';
+  }
 
   create(body: MlabFormItf) {
-    return this._http.post(`${this._url}/sap/sample`, body, {
+    return this._http.post(`${environment.api_url}/sap/sample`, body, {
       headers: { Authorization: `Bearer ${this._apikey}` },
     });
   }
@@ -53,7 +53,7 @@ export class MlabService {
       .set('codigoVehiculo', paramsData.codigoVehiculo)
       .set('loteInspeccion', paramsData.loteInspeccion)
       .set('puntoMuestreo', paramsData.puntoMuestreo);
-    return this._http.get<HTTPResItf<PdfResponseItf>>(`${this._portalUrl}/lab/sample/pdf`, {
+    return this._http.get<HTTPResItf<PdfResponseItf>>(`${environment.portal_url}/lab/sample/pdf`, {
       params,
     });
   }
@@ -67,10 +67,13 @@ export class MlabService {
       .set('year', paramsData.year)
       .set('page', String(paramsData.page))
       .set('limit', String(paramsData.limit));
-    return this._http.get<HTTPResItf<HTTPEDResItf<MlabListItf[]>>>(`${this._url}/sap/sample`, {
-      params,
-      headers: { Authorization: `Bearer ${this._apikey}` },
-    });
+    return this._http.get<HTTPResItf<HTTPEDResItf<MlabListItf[]>>>(
+      `${environment.api_url}/sap/sample`,
+      {
+        params,
+        headers: { Authorization: `Bearer ${this._apikey}` },
+      },
+    );
   }
 
   getData(paramsData: {
@@ -88,10 +91,13 @@ export class MlabService {
     if (paramsData.filter) params = params.set('filter', paramsData.filter);
     if (paramsData.filter2) params = params.set('filter2', paramsData.filter2);
 
-    return this._http.get<HTTPResItf<HTTPEDResItf<globalMlabItf[]>>>(`${this._url}/sap/catalogs`, {
-      headers: { Authorization: `Bearer ${this._apikey}` },
-      params,
-    });
+    return this._http.get<HTTPResItf<HTTPEDResItf<globalMlabItf[]>>>(
+      `${environment.api_url}/sap/catalogs`,
+      {
+        headers: { Authorization: `Bearer ${this._apikey}` },
+        params,
+      },
+    );
   }
 
   private fetchCatalog<T>(
@@ -110,7 +116,7 @@ export class MlabService {
     if (filter2) params = params.set('filter2', filter2);
 
     return this._http
-      .get<HTTPResItf<HTTPEDResItf<T[]>>>(`${this._url}/sap/catalogs`, {
+      .get<HTTPResItf<HTTPEDResItf<T[]>>>(`${environment.api_url}/sap/catalogs`, {
         headers: { Authorization: `Bearer ${this._apikey}` },
         params,
       })

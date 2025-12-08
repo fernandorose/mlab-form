@@ -8,8 +8,12 @@
     <div
       class="col-12 vh-25 d-flex flex-column justify-content-center align-items-center py-5 gap-4"
     >
-      <div class="spinner-border text-info" role="status"></div>
-      <span class="text-info">Cargando lista...</span>
+      @if (error()) {
+        <h1>Contacte con soporte TI</h1>
+      } @else {
+        <div class="spinner-border text-info" role="status"></div>
+        <span class="text-info">Cargando lista...</span>
+      }
     </div>
   } @else {
     <div class="table-responsive" style="max-height: 200vh; overflow-y: auto">

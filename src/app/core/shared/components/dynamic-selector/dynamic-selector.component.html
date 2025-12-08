@@ -94,7 +94,9 @@
           </div>
         }
 
-        @if (!hasMore() && items().length === 0 && !loading()) {
+        @if (!hasMore() && items().length === 0 && error()) {
+          <div class="error-data">Error al cargar los datos, contacte con TI</div>
+        } @else if (!hasMore() && items().length === 0 && !loading()) {
           <div class="no-more">No hay resultados</div>
         }
       </ul>

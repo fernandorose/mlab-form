@@ -1,7 +1,5 @@
-<div class="background"></div>
-<div class="background2"></div>
 <main class="container py-3 d-flex flex-column gap-2 justify-content-center align-items-center">
-  <div class="col-lg-5 col-md-8 d-flex flex-column gap-2">
+  <div class="d-flex flex-column gap-2" style="width: 30rem">
     <div class="w-100">
       <button
         (click)="list()"
@@ -217,8 +215,8 @@
     style="font-size: 0.9rem"
   >
     <small
-      >Registro de Muestras para Laboratorio Copyright ©
-      {{ todayDate() | date: 'yyyy' }} Industrias Indelpro S.A. de C.V.</small
+      >Registro de Muestras para Laboratorio Copyright © {{ todayDate() | date: 'yyyy' }} Industrias
+      Indelpro S.A. de C.V.</small
     >
     <small>Soporte técnico: <strong>intranetsupvsr&#64;indelpro.com</strong> o la ext. 1679</small>
   </div>

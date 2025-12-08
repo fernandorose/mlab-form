@@ -1,0 +1,93 @@
+.menu {
+  // padding: 10px;
+  // position: fixed;
+  z-index: 10;
+
+  .menu-container {
+    padding-block-start: 20px;
+    border-inline-end: solid 1px #000;
+    background: #242a33;
+    height: 100dvh;
+    // height: calc(100dvh - 20px);
+    width: 260px;
+    color: #cccccc;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* ------------------------- TITULOS PRINCIPALES ------------------------- */
+    .menu-title {
+      cursor: pointer;
+      padding: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: color 0.2s ease;
+
+      &:hover {
+        // color: #53a7ff;
+      }
+
+      .arrow {
+        transition: transform 0.3s ease;
+      }
+
+      /* Rotar flecha si el menú está abierto */
+      &.open .arrow {
+        transform: rotate(180deg);
+      }
+    }
+
+    /* ----------------------------- SUBMENÚ ----------------------------- */
+    .submenu {
+      // background: #141b23;
+      width: 100%;
+      max-height: 0;
+      overflow: hidden;
+      // border-block-end: solid 1px #000;
+      transition:
+        max-height 0.35s ease,
+        padding 0.25s ease;
+
+      &.open {
+        max-height: 400px; /* suficiente sin exagerar */
+        overflow-y: auto;
+      }
+
+      /* scroll minimalista */
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #2a3545;
+        border-radius: 4px;
+      }
+    }
+
+    /* -------------------------- ITEMS DEL SUBMENÚ -------------------------- */
+    .submenu-item {
+      padding: 6px 15px;
+      font-size: 0.9rem;
+      // color: #c4c8d0;
+      cursor: pointer;
+      // border-radius: 4px;
+      transition:
+        background 0.25s ease,
+        color 0.25s ease;
+
+      &:hover {
+        // background: #8290a3;
+        color: white;
+      }
+    }
+  }
+}
