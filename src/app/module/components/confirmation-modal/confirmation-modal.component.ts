@@ -1,5 +1,5 @@
 import { NgStyle, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FeatherModule } from 'angular-feather';
 
@@ -14,7 +14,8 @@ import { ColorEnum } from '@modMlab/coverage/enums';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmationModal {
-  @Input() data!: MlabFormItf;
+  // data = input<MlabFormItf>();
+  data!: MlabFormItf;
   public colors = ColorEnum;
   public activeModal = inject(NgbActiveModal);
   public capitalizeFields = ['Trabajador'];

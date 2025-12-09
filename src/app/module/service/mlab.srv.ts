@@ -124,7 +124,7 @@ export class MlabService {
   }
 
   getProcByArea(tipo: string, page: number, filter: string) {
-    return this.fetchCatalog<globalMlabItf>('4', page, 999, filter).pipe(
+    return this.fetchCatalog<globalMlabItf>('4', page, 9999, filter).pipe(
       map((rows) => rows.filter((r) => r.TIPO_ID === tipo)),
     );
   }

@@ -5,6 +5,9 @@
 }
 
 :root {
+  --mobile-breakpoint: 768px;
+  --sidebar-width: 260px;
+  --toggler-left-position: 20px;
   overscroll-behavior: none;
   --accent-light: #00db89;
   --primary-light: #0013db;

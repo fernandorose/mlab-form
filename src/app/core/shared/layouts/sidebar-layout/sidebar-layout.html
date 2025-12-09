@@ -1,6 +1,15 @@
 <div class="background"></div>
 <div class="background2"></div>
-<main>
+<!-- <main>
+  <div class="sidebar-container">
+    <app-sidebar-menu />
+  </div>
+  <div class="outlet">
+    <router-outlet />
+  </div>
+</main> -->
+
+<main [class.sidebar-collapsed]="isMenuCollapsed">
   <div class="sidebar-container">
     <app-sidebar-menu />
   </div>
@@ -8,3 +17,8 @@
     <router-outlet />
   </div>
 </main>
+<div
+  class="menu-toggler"
+  [class.visible]="isMenuCollapsed"
+  (click)="menuStateService.toggle()"
+></div>

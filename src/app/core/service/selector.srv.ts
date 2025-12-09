@@ -25,8 +25,13 @@ export class DynamicSelectorService {
     if (!areaObj) return of([]);
     return this._mlabSrv.getProcByArea(areaObj.NOMBRE, page, filter);
   };
-  loadFromArray(arr: string[]): Observable<globalMlabItf[]> {
-    const data = arr.map((name) => ({ ID: name, NOMBRE: name }) as globalMlabItf);
+
+  loadFromArray(arr: string[], filter: string): Observable<globalMlabItf[]> {
+    const lower = filter.toLowerCase();
+    const data = arr
+      .filter((name) => name.toLowerCase().includes(lower))
+      .map((name) => ({ ID: name, NOMBRE: name }) as globalMlabItf);
+
     return of(data);
   }
 
@@ -43,15 +48,20 @@ export class DynamicSelectorService {
       case FieldNames.ORIGIN:
         return (page: number, filter: string) => this.loadProcedencia(page, filter, selectedArea);
       case FieldNames.HOPPER_COMPARTMENT:
-        return (page: number) => (page === 1 ? this.loadFromArray(compartimientoTolva) : of([]));
+        return (page: number, filter: string) =>
+          page === 1 ? this.loadFromArray(compartimientoTolva, filter) : of([]);
       case FieldNames.FREIGHT_CAR_COMPARTMENT:
-        return (page: number) => (page === 1 ? this.loadFromArray(compartimientoFurgon) : of([]));
+        return (page: number, filter: string) =>
+          page === 1 ? this.loadFromArray(compartimientoFurgon, filter) : of([]);
       case FieldNames.CARRIER:
-        return (page: number) => (page === 1 ? this.loadFromArray(transportista) : of([]));
+        return (page: number, filter: string) =>
+          page === 1 ? this.loadFromArray(transportista, filter) : of([]);
       case FieldNames.LINE:
-        return (page: number) => (page === 1 ? this.loadFromArray(linea) : of([]));
+        return (page: number, filter: string) =>
+          page === 1 ? this.loadFromArray(linea, filter) : of([]);
       case FieldNames.SAMPLE_TYPE:
-        return (page: number) => (page === 1 ? this.loadFromArray(muestra) : of([]));
+        return (page: number, filter: string) =>
+          page === 1 ? this.loadFromArray(muestra, filter) : of([]);
     }
 
     return () => of([]);

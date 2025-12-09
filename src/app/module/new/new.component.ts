@@ -44,6 +44,7 @@ export class New {
   private modalSrv = inject(NgbModal);
   private selectorService = inject(DynamicSelectorService);
   private useNameInsteadOfId = [FieldNames.HOPPER_COMPARTMENT, FieldNames.FREIGHT_CAR_COMPARTMENT];
+  private ope = FieldNames.OPERATOR;
   private _paginationSignal = signal<BasePaginationItf>({
     order: 'desc',
     totData: 0,
@@ -286,6 +287,7 @@ export class New {
   public handleSelectorSpecialCases(field: string, item: globalMlabItf) {
     if (field === FieldNames.PRODUCT) this.onProductoSelected(item);
     if (field === FieldNames.ORIGIN) this.onProcedenciaSelected(item);
+    if (field === FieldNames.OPERATOR) this.onOperatorSelected(item);
   }
 
   public onSelectorSelected(field: string, event: globalMlabItf | globalMlabItf[]) {
@@ -297,7 +299,6 @@ export class New {
     const item = items[0];
     const value = this.extractSelectorValue(field, item);
     this.dynForm.get(field)?.setValue(value);
-
     this.handleSelectorSpecialCases(field, item);
   }
 
@@ -322,6 +323,10 @@ export class New {
 
   public onProductoSelected(item: globalMlabItf) {
     this.dynForm.get(FieldNames.PRODUCT)?.setValue(item.NOMBRE);
+  }
+
+  public onOperatorSelected(item: globalMlabItf) {
+    this.dynForm.get(FieldNames.OPERATOR)?.setValue(item.NOMBRE);
   }
 
   public onProcedenciaSelected(item: globalMlabItf) {

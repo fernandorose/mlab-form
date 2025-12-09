@@ -1,28 +1,59 @@
-<div class="menu">
+<div
+  class="menu-toggler shadow d-flex align-items-center gap-2"
+  [class.visible]="isMenuCollapsed"
+  (click)="toggleMenuCollapse()"
+>
+  <img src="/icon_indelpro_light.svg" alt="" width="30" />
+  <!-- <span>Menu</span> -->
+</div>
+<div class="menu" [class.collapsed]="isMenuCollapsed">
   <div class="menu-container">
     <div class="w-100">
-      <div class="d-flex gap-2 align-items-center justify-content-center">
-        <img src="/icon_indelpro_light.svg" alt="" width="50" />
-        <img src="/let_indelpro_light.svg" alt="" width="150" />
-        <!-- <img src="/indelpro_light.svg" alt="" width="200" /> -->
+      <div class="menu-opts">
+        <div class="d-flex gap-2">
+          <img src="/icon_indelpro_light.svg" alt="" width="30" />
+          <img src="/let_indelpro_light.svg" alt="" width="120" />
+        </div>
+        <button (click)="toggleMenuCollapse()" class="btn btn-primary d-flex align-items-center">
+          <i-feather name="chevron-left"></i-feather>
+        </button>
       </div>
       <ul>
-        @for (m of menu; track $index; let i = $index) {
-          <li class="menu-title" (click)="toggle(i)">
-            {{ m.title }}
-            <span class="arrow">
-              <i-feather name="chevron-down"></i-feather>
-            </span>
-          </li>
+        <div>
+          @for (m of menu; track $index; let i = $index) {
+            <li
+              class="menu-title"
+              (click)="m.items ? toggle(i) : goTo(m.route)"
+              [class.active]="isActive(m.route) || isParentActive(m)"
+            >
+              <span class="d-flex gap-2">
+                @if (m.icon) {
+                  <span>
+                    <i-feather name="{{ m.icon }}" class="icon" />
+                  </span>
+                }
+                {{ m.title }}
+              </span>
+              @if (m.items) {
+                <span class="arrow">
+                  <i-feather name="chevron-down"></i-feather>
+                </span>
+              }
+            </li>
 
-          <ul class="submenu" [class.open]="openStates[i]">
-            @for (item of m.items; track $index) {
-              <li class="submenu-item" [routerLink]="[item.route]">
-                <small>{{ item.label }}</small>
-              </li>
-            }
-          </ul>
-        }
+            <ul class="submenu" [class.open]="openStates[i]">
+              @for (item of m.items; track $index) {
+                <li
+                  class="submenu-item"
+                  [class.active]="isActive(item.route)"
+                  (click)="goTo(item.route)"
+                >
+                  <small class="label">{{ item.label }}</small>
+                </li>
+              }
+            </ul>
+          }
+        </div>
       </ul>
     </div>
   </div>

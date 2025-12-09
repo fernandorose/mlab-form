@@ -90,7 +90,7 @@ export const fields = [
   },
   {
     name: FieldNames.OPERATOR,
-    type: FieldTypes.VALIDATOR,
+    type: FieldTypes.SELECTOR,
     label: 'número de trabajador',
   },
   {

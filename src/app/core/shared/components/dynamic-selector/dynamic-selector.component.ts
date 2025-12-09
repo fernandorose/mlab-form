@@ -16,12 +16,20 @@ import { debounceTime, delay, distinctUntilChanged, Observable, Subject } from '
 import { NgStyle } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CapitalizeTransformPipe } from '@core/shared/pipes';
+import { IdTransformPipe } from '@core/shared/pipes/id-transform.pipe';
 import { ColorEnum } from '@modMlab/coverage/enums';
 
 @Component({
   selector: 'app-dynamic-selector',
   standalone: true,
-  imports: [FeatherModule, FormsModule, ReactiveFormsModule, CapitalizeTransformPipe, NgStyle],
+  imports: [
+    FeatherModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CapitalizeTransformPipe,
+    NgStyle,
+    IdTransformPipe,
+  ],
   templateUrl: './dynamic-selector.component.html',
   styleUrl: './dynamic-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +37,10 @@ import { ColorEnum } from '@modMlab/coverage/enums';
 export class DynamicSelector<T extends object> implements OnInit {
   loadData = input.required<(page: number, filter: string) => Observable<T[]>>();
   displayField = input.required<keyof T>();
+  displayField2 = input<keyof T>();
+  twoFields = input(false);
+  useIdTransformPipe = input(false);
+  nameCaptitalize = input(false);
   multiple = input(false);
   idField = input.required<keyof T>();
   searchable = input(false);

@@ -1,5 +1,5 @@
 <main class="container py-3 d-flex flex-column gap-2 justify-content-center align-items-center">
-  <div class="d-flex flex-column gap-2" style="width: 30rem">
+  <div class="col-lg-5 col-md-8 d-flex flex-column gap-2">
     <div class="w-100">
       <button
         (click)="list()"
@@ -71,8 +71,7 @@
             [ngStyle]="{ background: colors.DIVIDER }"
           >
             <i-feather name="alert-circle"></i-feather>
-            <span class="fw-semibold">Seleccione un área</span>
-            para cargar los campos.
+            <span class="fw-semibold">Seleccione un área para cargar los campos.</span>
           </div>
         } @else if (noFields()) {
           <div
@@ -119,6 +118,10 @@
                           [idField]="'ID'"
                           [searchable]="true"
                           displayField="NOMBRE"
+                          [twoFields]="f.name === fieldNames.OPERATOR ? true : false"
+                          displayField2="ID"
+                          [nameCaptitalize]="f.name === fieldNames.OPERATOR ? true : false"
+                          [useIdTransformPipe]="f.name === fieldNames.OPERATOR ? true : false"
                           (cleared)="onDynamicSelectorCleared(f.name)"
                           [multiple]="isFieldMultiple(f.name)"
                           (selected)="onSelectorSelected(f.name, $event)"
@@ -215,8 +218,8 @@
     style="font-size: 0.9rem"
   >
     <small
-      >Registro de Muestras para Laboratorio Copyright © {{ todayDate() | date: 'yyyy' }} Industrias
-      Indelpro S.A. de C.V.</small
+      >Registro de Muestras para Laboratorio Copyright ©
+      {{ todayDate() | date: 'yyyy' }} Industrias Indelpro S.A. de C.V.</small
     >
     <small>Soporte técnico: <strong>intranetsupvsr&#64;indelpro.com</strong> o la ext. 1679</small>
   </div>

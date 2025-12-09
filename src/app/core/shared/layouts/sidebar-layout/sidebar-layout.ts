@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MenuStateService } from '@core/service/toggle-menu.srv';
 import { SidebarMenu } from '@core/shared/components/sidebar-menu/sidebar-menu';
 
 @Component({
@@ -9,4 +10,13 @@ import { SidebarMenu } from '@core/shared/components/sidebar-menu/sidebar-menu';
   styleUrl: './sidebar-layout.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarLayout {}
+export class SidebarLayout {
+  public menuStateService = inject(MenuStateService);
+  public isMenuCollapsed = false;
+
+  ngOnInit() {
+    this.menuStateService.isCollapsed$.subscribe((collapsed) => {
+      this.isMenuCollapsed = collapsed;
+    });
+  }
+}

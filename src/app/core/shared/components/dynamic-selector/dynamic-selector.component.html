@@ -6,11 +6,17 @@
           <span class="selector-content-display">
             @if (!multiple()) {
               <span>
-                {{
-                  selectedItem()
-                    ? (selectedItem()![displayField()] | capitalizeTransform)
-                    : 'Seleccione...'
-                }}
+                @if (selectedItem()) {
+                  @if (nameCaptitalize()) {
+                    <span class="text-capitalize">{{
+                      selectedItem()![displayField()] | capitalizeTransform
+                    }}</span>
+                  } @else {
+                    {{ selectedItem()![displayField()] | capitalizeTransform }}
+                  }
+                } @else {
+                  Seleccione...
+                }
               </span>
             } @else if (selectedItems().length === 0) {
               Seleccione...
@@ -77,7 +83,24 @@
               <span class="checkbox" [class.checked]="isSelected(item)"></span>
             }
 
-            {{ item[displayField()] | capitalizeTransform }}
+            <div class="d-flex gap-2 align-items-center">
+              @if (nameCaptitalize()) {
+                <span class="text-capitalize">
+                  {{ item[displayField()] | capitalizeTransform }}</span
+                >
+              } @else {
+                <span> {{ item[displayField()] | capitalizeTransform }}</span>
+              }
+              @if (twoFields()) {
+                <small class="text-success fw-semibold">
+                  @if (useIdTransformPipe()) {
+                    {{ item[displayField2()!] | capitalizeTransform | idtransform }}
+                  } @else {
+                    {{ item[displayField2()!] | capitalizeTransform }}
+                  }
+                </small>
+              }
+            </div>
           </li>
         }
 
